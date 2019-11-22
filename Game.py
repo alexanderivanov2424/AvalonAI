@@ -1,5 +1,5 @@
 
-
+#http://upload.snakesandlattes.com/rules/r/ResistanceAvalon.pdf
 class Avalon:
 
     def __init__():

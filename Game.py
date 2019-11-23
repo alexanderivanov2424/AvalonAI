@@ -2,8 +2,9 @@ import numpy as np
 
 from Player import Player
 
-
 #http://upload.snakesandlattes.com/rules/r/ResistanceAvalon.pdf
+
+
 class Avalon:
     """
     5 player version
@@ -18,6 +19,9 @@ class Avalon:
 
     Quest:  -1  0  1
              F  ?  P
+
+    Votes:  0  1
+            N  Y
 
 
     State:
@@ -90,13 +94,7 @@ class Avalon:
         leaders[self.leader] = 1
         return leaders
 
-    def get_state(self, i, on_quest = 0, quest_r = 0, team_p = None, team_s = None, team_v = None):
-        if team_p == None:
-            team_p = np.zeros(self.N)
-        if team_s == None:
-            team_s = np.zeros(self.N)
-        if team_v == None:
-            team_v = np.zeros(self.N)
+    def get_state(self, i, on_quest = 0, quest_r = 0):
 
         state = np.zeros(self.state_size)
 
@@ -117,9 +115,9 @@ class Avalon:
 
         state[23:28] = self.quests
 
-        state[28:33] = team_p #proposed team
-        state[33:38] = team_s #selected team
-        state[38:43] = team_v #who voted how
+        state[28:33] = self.team #proposed team
+        state[33:38] = self.team #selected team
+        state[38:43] = self.team_vote #who voted how
 
         return state
 
@@ -171,12 +169,17 @@ class Avalon:
         player = self.players[self.leader]
         state = self.get_state(self.leader)
         state = self.mask_state(state,'team_prop')
-        team = player.pick_team(state)
+        self.team = player.pick_team(state)
 
 
     def vote_team(self):
         #everyone sees proposed team and votes
-        pass
+        for i,player in enumerate(self.players):
+            state = self.get_state(i)
+            state = self.mask_state(state,'team_vote')
+            self.team_vote[i] = player.see_start(state)
+
+        #TODO did vote pass
 
     def show_team(self):
         #everyone sees selected team and who picked it
@@ -196,3 +199,5 @@ class Avalon:
 players = [Player() for i in range(5)]
 game = Avalon(players)
 game.start_game()
+game.get_team()
+game.vote_team()

@@ -39,3 +39,33 @@ class Player:
     def guess_merlin(self, state):
         #request guess for merlin
         pass
+
+
+class HumanPlayer(Player):
+
+    def __init__(self):
+        pass
+
+    def role_to_name(self, role):
+        if r == -1:
+            return 'EVIL'
+        if r == 0:
+            return '????'
+        if r == 1:
+            return 'GOOD'
+        if r == 2:
+            return 'MERL'
+
+    def see_start(self,state):
+        print(self.role_to_name(state[1]))
+        print([self.role_to_name(r) for r in state[7:12]])
+
+
+    def pick_team(self,state):
+        print("Pick a team: ")
+        team = input("Team list")
+        team_list = eval(team)
+        return np.array(team_list)
+
+    def show_team(self, state):
+        print()

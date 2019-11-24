@@ -77,6 +77,13 @@ class Avalon:
         self.state_size = 45
         pass
 
+    def increment_leader(self):
+        self.leader += 1
+        self.leader %= self.N
+
+    def set_team_size(self, team_size):
+        self.team_size = team_size
+
     def get_visible_roles(self, role, i):
         assert role in [-1, 1, 2]
         if role == -1:
@@ -186,6 +193,9 @@ class Avalon:
         state = self.get_state(self.leader)
         state = self.mask_state(state, "team_prop")
         self.team = player.pick_team(state)
+        indices = self.team.argsort()[-self.team_size :]
+        self.team = np.zeros(self.N)
+        self.team[indices] = 1
 
     def vote_team(self):
         # everyone sees proposed team and votes
@@ -194,8 +204,7 @@ class Avalon:
             state = self.mask_state(state, "team_vote")
             self.team_vote[i] = player.vote_team(state)
 
-        # TODO did vote pass
-        self.team_r = (np.sum(self.team_vote) / self.N) > 0.5
+        self.team_r = self.team_vote.sum() >= self.N / 2
 
     def show_team(self):
         # everyone sees selected team and who picked it
@@ -231,9 +240,25 @@ class Avalon:
             player.see_quest(state)
 
 
-# Testing
-players = [HumanPlayer() for i in range(5)]
-game = Avalon(players)
-game.start_game()
-game.get_team()
-game.vote_team()
+class AvalonRunner:
+    def __init__(self):
+        players = [HumanPlayer() for i in range(5)]
+        self.game = Avalon(players)
+        self.quest = 0
+        self.team_sizes = [2, 3, 2, 3, 3]
+
+    def run_game(self):
+        self.game.start_game()
+        for team_size in self.team_sizes:
+            self.game.set_team_size(team_size)
+            self.game.get_team()
+            self.game.vote_team()
+            self.game.show_team()
+            if self.game.team_r:  # extracting vote result
+                self.game.vote_quest()
+                self.game.show_quest()
+            self.game.increment_leader()
+
+
+runner = AvalonRunner()
+runner.run_game()

@@ -67,8 +67,30 @@ class HumanPlayer(Player):
     def pick_team(self,state):
         print("Pick a team: ")
         team = input("Team list: ")
+        print()
         team_list = team.split(' ')
         return np.array(team_list)
 
-    def show_team(self, state):
+    def vote_team(self,state):
+        print("Proposed Team: ", state[27:32])
+        print("Leader: ", state[17:22])
+        vote = input("Vote for Team (0,1): ")
         print()
+        return int(vote)
+
+    def show_team(self,state):
+        print("Proposed Team: ", state[27:32])
+        print("Selected Team: ", state[32:37])
+        print("Leader: ", state[17:22])
+        print()
+
+    def vote_quest(self,state):
+        print("Selected Team: ", state[32:37])
+        vote = input("Do Quest (0,1): ")
+        print()
+        return int(vote)
+
+    def show_quest(self,state):
+        print("Selected Team: ", state[32:37])
+        print("Quest Result: ", state[6], "Fail Votes: ", state[44])
+        print("Quests: ", state[22:27])

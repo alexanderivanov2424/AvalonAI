@@ -56,12 +56,14 @@ class Avalon:
         assert len(players) == 5
 
         self.N = 5
+        self.team_sizes = [2, 3, 2, 3, 3]
         self.players = players
         self.roles = np.array([-1, -1, 1, 1, 2])
 
         np.random.shuffle(self.roles)
         self.sides = (self.roles > 0) * 2 - 1
         self.leader = np.random.randint(self.N)
+        self.current_quest = 0
         self.quests = np.zeros(self.N)
 
         self.team = np.zeros(self.N)
@@ -80,9 +82,6 @@ class Avalon:
     def increment_leader(self):
         self.leader += 1
         self.leader %= self.N
-
-    def set_team_size(self, team_size):
-        self.team_size = team_size
 
     def get_visible_roles(self, role, i):
         assert role in [-1, 1, 2]
@@ -189,6 +188,7 @@ class Avalon:
 
     def get_team(self):
         # have leader select team
+        self.team_size = self.team_sizes[self.current_quest]
         player = self.players[self.leader]
         state = self.get_state(self.leader)
         state = self.mask_state(state, "team_prop")
@@ -231,6 +231,7 @@ class Avalon:
 
         assert self.quest_succeed_votes + self.quest_fail_votes == self.team_size
         self.quest_r = not self.quest_fail_votes
+        self.quests[self.current_quest] = 2 * self.quest_r - 1
 
     def show_quest(self):
         # everyone sees quest result
@@ -239,25 +240,29 @@ class Avalon:
             state = self.mask_state(state, "quest_info")
             player.see_quest(state)
 
+        # end of round, so increment leader and current quest
+        self.increment_leader()
+        self.current_quest += 1
+
+    def is_over(self):
+        maj = np.ceil(self.N / 2)
+        return np.sum(self.quests == -1) >= maj or np.sum(self.quests == 1) >= maj
+
 
 class AvalonRunner:
     def __init__(self):
         players = [HumanPlayer() for i in range(5)]
         self.game = Avalon(players)
-        self.quest = 0
-        self.team_sizes = [2, 3, 2, 3, 3]
 
     def run_game(self):
         self.game.start_game()
-        for team_size in self.team_sizes:
-            self.game.set_team_size(team_size)
+        while not self.game.is_over():
             self.game.get_team()
             self.game.vote_team()
             self.game.show_team()
             if self.game.team_r:  # extracting vote result
                 self.game.vote_quest()
                 self.game.show_quest()
-            self.game.increment_leader()
 
 
 runner = AvalonRunner()

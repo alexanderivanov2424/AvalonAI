@@ -94,3 +94,9 @@ class HumanPlayer(Player):
         print("Selected Team: ", state[32:37])
         print("Quest Result: ", state[6], "Fail Votes: ", state[44])
         print("Quests: ", state[22:27])
+
+    def guess_merlin(self, state):
+        team = input("Guess Merlin: ")
+        print()
+        team_list = team.split(' ')
+        return np.array(team_list)

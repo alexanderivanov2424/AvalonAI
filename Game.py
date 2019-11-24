@@ -208,18 +208,27 @@ class Avalon:
     def vote_quest(self):
         # members of quest vote
         quest_votes = []
+        self.quest_succeed_votes = 0
+        self.quest_fail_votes = 0
         for i, player in enumerate(self.players):
             if not self.team_vote[i]:
                 continue
             state = self.get_state(i)
             state = self.mask_state(state, "quest_vote")
-            quest_votes.append(player.vote_quest(state))
+            if player.vote_quest(state):
+                self.quest_succeed_votes += 1
+            else:
+                self.quest_fail_votes += 1
 
-        self.quest_r = all(vote == 1 for vote in quest_votes)
+        assert self.quest_succeed_votes + self.quest_fail_votes == self.team_size
+        self.quest_r = not self.quest_fail_votes
 
     def show_quest(self):
         # everyone sees quest result
-        pass
+        for i, player in enumerate(self.players):
+            state = self.get_state(i)
+            state = self.mask_state(state, "quest_info")
+            player.see_quest(state)
 
 
 # Testing

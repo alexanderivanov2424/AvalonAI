@@ -76,6 +76,8 @@ class Avalon:
         self.quest_succeed_votes = 0
         self.quest_fail_votes = 0
 
+        self.game_result = 0
+        self.merlin_discovered = False
         self.state_size = 45
         pass
 
@@ -244,9 +246,32 @@ class Avalon:
         self.increment_leader()
         self.current_quest += 1
 
+    def guess_merlin(self):
+        guesses = np.zeros(self.N)
+        for i, player in enumerate(self.players):
+            if not self.roles[i] == -1:
+                continue
+            state = self.get_state(i)
+            state = self.mask_state(state, "none")
+            guesses += player.guess_merlin()
+
+        self.merlin_discovered = self.roles[np.argmax(guesses)] == 2
+        if self.merlin_discovered:
+            self.game_result = -1
+
     def is_over(self):
+        return self.game_result
+
+    def winning_side(self):
         maj = np.ceil(self.N / 2)
-        return np.sum(self.quests == -1) >= maj or np.sum(self.quests == 1) >= maj
+        if np.sum(self.quests == -1) >= maj:
+            self.game_result = -1
+        if np.sum(self.quests == 1) >= maj:
+            self.game_result = 1
+        return self.game_result
+
+    def get_game_result(self):
+        return self.sides == self.game_result
 
 
 class AvalonRunner:
@@ -264,6 +289,11 @@ class AvalonRunner:
                 self.game.vote_quest()
                 self.game.show_quest()
 
+        if self.game.winning_side() == 1:
+            self.game.guess_merlin()
+
+        return self.game.get_game_result()
+
 
 runner = AvalonRunner()
-runner.run_game()
+print(runner.run_game())

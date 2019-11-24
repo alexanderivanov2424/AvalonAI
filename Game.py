@@ -2,7 +2,7 @@ import numpy as np
 
 from Player import Player
 
-#http://upload.snakesandlattes.com/rules/r/ResistanceAvalon.pdf
+# http://upload.snakesandlattes.com/rules/r/ResistanceAvalon.pdf
 
 
 class Avalon:
@@ -46,14 +46,18 @@ class Avalon:
     team proposition    (5)                0 1
     team selected       (5)                0 1
     team votes          (5)                0 1
+
+    team size           (1)                2-4
+    quest succeed votes (1)                2-4
+    quest fail votes    (1)                2-4
     """
 
     def __init__(self, players):
-        assert(len(players) == 5)
+        assert len(players) == 5
 
         self.N = 5
         self.players = players
-        self.roles = np.array([-1,-1,1,1,2])
+        self.roles = np.array([-1, -1, 1, 1, 2])
 
         np.random.shuffle(self.roles)
         self.sides = (self.roles > 0) * 2 - 1
@@ -62,12 +66,14 @@ class Avalon:
 
         self.team = np.zeros(self.N)
         self.team_vote = np.zeros(self.N)
+        self.team_r = 0
+        self.quest_r = 0
 
-        self.state_size = 42
+        self.state_size = 45
         pass
 
-    def get_visible_roles(self,role, i):
-        assert(role in [-1,1,2])
+    def get_visible_roles(self, role, i):
+        assert role in [-1, 1, 2]
         if role == -1:
             return self.roles * (self.roles == -1)
         if role == 1:
@@ -77,8 +83,8 @@ class Avalon:
         if role == 2:
             return self.roles
 
-    def get_visible_sides(self,role, i):
-        assert(role in [-1,1,2])
+    def get_visible_sides(self, role, i):
+        assert role in [-1, 1, 2]
         if role == -1:
             return self.sides
         if role == 1:
@@ -93,7 +99,7 @@ class Avalon:
         leaders[self.leader] = 1
         return leaders
 
-    def get_state(self, i, on_quest = 0, quest_r = 0):
+    def get_state(self, i):
 
         state = np.zeros(self.state_size)
 
@@ -102,10 +108,10 @@ class Avalon:
 
         state[2] = 1 if i == self.leader else 0
 
-        state[3] = 1 #need team proposition
-        state[4] = 1 #need team vote
-        state[5] = 1 #need quest vote
-        state[6] = quest_r
+        state[3] = 1  # need team proposition
+        state[4] = 1  # need team vote
+        state[5] = 1  # need quest vote
+        state[6] = self.quest_r
 
         state[7:12] = self.get_visible_sides(state[1], i)
         state[12:17] = self.get_visible_roles(state[1], i)
@@ -113,87 +119,105 @@ class Avalon:
 
         state[22:27] = self.quests
 
-        state[27:32] = self.team #proposed team
-        state[32:37] = self.team #selected team
-        state[37:42] = self.team_vote #who voted how
+        state[27:32] = self.team  # proposed team
+        state[32:37] = self.team  # selected team
+        state[37:42] = self.team_vote  # who voted how
+
+        state[42] = self.team_size
+        state[43] = self.quest_succeed_votes
+        state[44] = self.quest_fail_votes
 
         return state
 
-    def mask_state(self, state, mode = 'all'):
+    def mask_state(self, state, mode="all"):
         mask = np.zeros(self.state_size)
-        mask[0] = 1 #always show own side
-        mask[1] = 1 #always show own role
-        mask[2] = 1 #always show leader
-        mask[22:27] = 1 #always show current quests
+        mask[0] = 1  # always show own side
+        mask[1] = 1  # always show own role
+        mask[2] = 1  # always show leader
+        mask[22:27] = 1  # always show current quests
+        mask[42] = 1  # always show team size
 
-        if mode == 'all':
+        if mode == "all":
             mask[:] = 1
-        if mode == 'start':
-            mask[7:22] = 1 #show visible sides, roles, leaders
-        if mode == 'team_prop':
-            mask[3] = 1 #nead team prop
-            mask[17:22] = 1 #show leaders
-        if mode == 'team_vote':
-            mask[4] = 1 #need team vote
-            mask[17:22] = 1 #show leaders
-            mask[27:32] = 1 #show proposition
-        if mode == 'team_fail_info':
-            mask[17:22] = 1 #show leaders
-            mask[37:42] = 1 #show votes
-        if mode == 'team_pass_info':
-            mask[17:22] = 1 #show leaders
-            mask[32:37] = 1 #show team
-            mask[37:42] = 1 #show votes
-        if mode == 'quest_vote':
-            mask[5] = 1 #need quest vote
-            mask[32:37] = 1 #show team
-        if mode == 'quest_info':
-            mask[6] = 1 #quest result
-            mask[17:22] = 1 #show leaders
-            mask[32:37] = 1 #show team
-        if mode == 'none':
+        if mode == "start":
+            mask[7:22] = 1  # show visible sides, roles, leaders
+        if mode == "team_prop":
+            mask[3] = 1  # nead team prop
+            mask[17:22] = 1  # show leaders
+        if mode == "team_vote":
+            mask[4] = 1  # need team vote
+            mask[17:22] = 1  # show leaders
+            mask[27:32] = 1  # show proposition
+        if mode == "team_fail_info":
+            mask[17:22] = 1  # show leaders
+            mask[37:42] = 1  # show votes
+        if mode == "team_pass_info":
+            mask[17:22] = 1  # show leaders
+            mask[32:37] = 1  # show team
+            mask[37:42] = 1  # show votes
+        if mode == "quest_vote":
+            mask[5] = 1  # need quest vote
+            mask[32:37] = 1  # show team
+        if mode == "quest_info":
+            mask[6] = 1  # quest result
+            mask[17:22] = 1  # show leaders
+            mask[32:37] = 1  # show team
+            mask[43] = 1  # show quest succeed votes
+            mask[44] = 1  # show quest fail votes
+        if mode == "none":
             pass
         return state * mask
 
     def start_game(self):
-        #give first input to each agent
-        for i,player in enumerate(self.players):
+        # give first input to each agent
+        for i, player in enumerate(self.players):
             state = self.get_state(i)
-            state = self.mask_state(state,'start')
+            state = self.mask_state(state, "start")
             player.see_start(state)
 
     def get_team(self):
-        #have leader select team
+        # have leader select team
         player = self.players[self.leader]
         state = self.get_state(self.leader)
-        state = self.mask_state(state,'team_prop')
+        state = self.mask_state(state, "team_prop")
         self.team = player.pick_team(state)
 
-
     def vote_team(self):
-        #everyone sees proposed team and votes
-        for i,player in enumerate(self.players):
+        # everyone sees proposed team and votes
+        for i, player in enumerate(self.players):
             state = self.get_state(i)
-            state = self.mask_state(state,'team_vote')
-            self.team_vote[i] = player.see_start(state)
+            state = self.mask_state(state, "team_vote")
+            self.team_vote[i] = player.vote_team(state)
 
-        #TODO did vote pass
+        # TODO did vote pass
+        self.team_r = (np.sum(self.team_vote) / self.N) > 0.5
 
     def show_team(self):
-        #everyone sees selected team and who picked it
-        pass
+        # everyone sees selected team and who picked it
+        team_mask = "team_pass_info" if self.team_r else "team_fail_info"
+        for i, player in enumerate(self.players):
+            state = self.get_state(i)
+            state = self.mask_state(state, team_mask)
+            player.show_team(state)
 
     def vote_quest(self):
-        #members of quest vote
-        pass
+        # members of quest vote
+        quest_votes = []
+        for i, player in enumerate(self.players):
+            if not self.team_vote[i]:
+                continue
+            state = self.get_state(i)
+            state = self.mask_state(state, "quest_vote")
+            quest_votes.append(player.vote_quest(state))
+
+        self.quest_r = all(vote == 1 for vote in quest_votes)
 
     def show_quest(self):
-        #everyone sees quest result
+        # everyone sees quest result
         pass
 
 
-
-#Testing
+# Testing
 players = [Player() for i in range(5)]
 game = Avalon(players)
 game.start_game()

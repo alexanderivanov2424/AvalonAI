@@ -79,7 +79,7 @@ class HumanPlayer(Player):
         return int(vote)
 
     def show_team(self,state):
-        print("Votes Team: ", mask[37:42])
+        print("Votes Team: ", state[37:42])
         print("Selected Team: ", state[32:37])
         print("Leader: ", state[17:22])
         print()
@@ -90,7 +90,7 @@ class HumanPlayer(Player):
         print()
         return int(vote)
 
-    def show_quest(self,state):
+    def see_quest(self,state):
         print("Selected Team: ", state[32:37])
         print("Quest Result: ", state[6], "Fail Votes: ", state[44])
         print("Quests: ", state[22:27])

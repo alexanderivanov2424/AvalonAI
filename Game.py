@@ -220,7 +220,7 @@ class Avalon:
         self.quest_succeed_votes = 0
         self.quest_fail_votes = 0
         for i, player in enumerate(self.players):
-            if not self.team_vote[i]:
+            if self.team_vote[i] == 0:
                 continue
             state = self.get_state(i)
             state = self.mask_state(state, "quest_vote")

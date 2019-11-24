@@ -1,4 +1,4 @@
-
+import numpy as np
 
 class Player:
 
@@ -58,13 +58,16 @@ class HumanPlayer(Player):
 
     def see_start(self,state):
         print(self.role_to_name(state[1]))
-        print([self.role_to_name(r) for r in state[7:12]])
+        if state[2]:
+            print("You are the leader")
+        print([self.role_to_name(r) for r in state[12:17]])
+        print()
 
 
     def pick_team(self,state):
         print("Pick a team: ")
-        team = input("Team list")
-        team_list = eval(team)
+        team = input("Team list: ")
+        team_list = team.split(' ')
         return np.array(team_list)
 
     def show_team(self, state):

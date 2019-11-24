@@ -79,7 +79,7 @@ class HumanPlayer(Player):
         return int(vote)
 
     def show_team(self,state):
-        print("Proposed Team: ", state[27:32])
+        print("Votes Team: ", mask[37:42])
         print("Selected Team: ", state[32:37])
         print("Leader: ", state[17:22])
         print()

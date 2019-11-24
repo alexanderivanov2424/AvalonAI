@@ -47,13 +47,13 @@ class HumanPlayer(Player):
         pass
 
     def role_to_name(self, role):
-        if r == -1:
+        if role == -1:
             return 'EVIL'
-        if r == 0:
+        if role == 0:
             return '????'
-        if r == 1:
+        if role == 1:
             return 'GOOD'
-        if r == 2:
+        if role == 2:
             return 'MERL'
 
     def see_start(self,state):

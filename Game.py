@@ -1,6 +1,6 @@
 import numpy as np
 
-from Player import Player
+from Player import *
 
 # http://upload.snakesandlattes.com/rules/r/ResistanceAvalon.pdf
 
@@ -66,8 +66,13 @@ class Avalon:
 
         self.team = np.zeros(self.N)
         self.team_vote = np.zeros(self.N)
+
         self.team_r = 0
         self.quest_r = 0
+
+        self.team_size = 2
+        self.quest_succeed_votes = 0
+        self.quest_fail_votes = 0
 
         self.state_size = 45
         pass
@@ -218,7 +223,7 @@ class Avalon:
 
 
 # Testing
-players = [Player() for i in range(5)]
+players = [HumanPlayer() for i in range(5)]
 game = Avalon(players)
 game.start_game()
 game.get_team()

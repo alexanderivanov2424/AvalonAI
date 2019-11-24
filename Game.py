@@ -31,7 +31,6 @@ class Avalon:
     own role            (1)             -1   1 2
 
     is leader           (1)                0 1
-    is on quest         (1)                0 1
 
     need team prop      (1)                0 1
     need team vote      (1)                0 1
@@ -64,7 +63,7 @@ class Avalon:
         self.team = np.zeros(self.N)
         self.team_vote = np.zeros(self.N)
 
-        self.state_size = 43
+        self.state_size = 42
         pass
 
     def get_visible_roles(self,role, i):
@@ -102,22 +101,21 @@ class Avalon:
         state[1] = self.roles[i]
 
         state[2] = 1 if i == self.leader else 0
-        state[3] = on_quest
 
-        state[4] = 1 #need team proposition
-        state[5] = 1 #need team vote
-        state[6] = 1 #need quest vote
-        state[7] = quest_r
+        state[3] = 1 #need team proposition
+        state[4] = 1 #need team vote
+        state[5] = 1 #need quest vote
+        state[6] = quest_r
 
-        state[8:13] = self.get_visible_sides(state[1], i)
-        state[13:18] = self.get_visible_roles(state[1], i)
-        state[18:23] = self.get_visible_leader()
+        state[7:12] = self.get_visible_sides(state[1], i)
+        state[12:17] = self.get_visible_roles(state[1], i)
+        state[17:22] = self.get_visible_leader()
 
-        state[23:28] = self.quests
+        state[22:27] = self.quests
 
-        state[28:33] = self.team #proposed team
-        state[33:38] = self.team #selected team
-        state[38:43] = self.team_vote #who voted how
+        state[27:32] = self.team #proposed team
+        state[32:37] = self.team #selected team
+        state[37:42] = self.team_vote #who voted how
 
         return state
 
@@ -126,33 +124,33 @@ class Avalon:
         mask[0] = 1 #always show own side
         mask[1] = 1 #always show own role
         mask[2] = 1 #always show leader
-        mask[23:28] = 1 #always show current quests
+        mask[22:27] = 1 #always show current quests
 
         if mode == 'all':
             mask[:] = 1
         if mode == 'start':
-            mask[8:23] = 1 #show visible sides, roles, leaders
+            mask[7:22] = 1 #show visible sides, roles, leaders
         if mode == 'team_prop':
-            mask[4] = 1 #nead team prop
-            mask[18:23] = 1 #show leaders
+            mask[3] = 1 #nead team prop
+            mask[17:22] = 1 #show leaders
         if mode == 'team_vote':
-            mask[3] = 1 #need team vote
-            mask[18:23] = 1 #show leaders
-            mask[23:28] = 1 #show proposition
+            mask[4] = 1 #need team vote
+            mask[17:22] = 1 #show leaders
+            mask[27:32] = 1 #show proposition
         if mode == 'team_fail_info':
-            mask[18:23] = 1 #show leaders
-            mask[38:43] = 1 #show votes
+            mask[17:22] = 1 #show leaders
+            mask[37:42] = 1 #show votes
         if mode == 'team_pass_info':
-            mask[18:23] = 1 #show leaders
-            mask[23:28] = 1 #show team
-            mask[38:43] = 1 #show votes
+            mask[17:22] = 1 #show leaders
+            mask[32:37] = 1 #show team
+            mask[37:42] = 1 #show votes
         if mode == 'quest_vote':
-            mask[6] = 1 #need quest vote
-            mask[23:28] = 1 #show team
+            mask[5] = 1 #need quest vote
+            mask[32:37] = 1 #show team
         if mode == 'quest_info':
-            mask[7] = 1 #quest result
-            mask[18:23] = 1 #show leaders
-            mask[23:28] = 1 #show team
+            mask[6] = 1 #quest result
+            mask[17:22] = 1 #show leaders
+            mask[32:37] = 1 #show team
         if mode == 'none':
             pass
         return state * mask

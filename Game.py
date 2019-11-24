@@ -260,14 +260,14 @@ class Avalon:
             self.game_result = -1
 
     def is_over(self):
-        return self.game_result
-
-    def winning_side(self):
         maj = np.ceil(self.N / 2)
         if np.sum(self.quests == -1) >= maj:
             self.game_result = -1
         if np.sum(self.quests == 1) >= maj:
             self.game_result = 1
+        return self.game_result
+
+    def winning_side(self):
         return self.game_result
 
     def get_game_result(self):

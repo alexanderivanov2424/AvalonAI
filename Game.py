@@ -1,5 +1,5 @@
 import numpy as np
-
+import tensorflow as tf
 from Player import *
 
 # http://upload.snakesandlattes.com/rules/r/ResistanceAvalon.pdf
@@ -79,6 +79,8 @@ class Avalon:
         self.game_result = 0
         self.merlin_discovered = False
         self.state_size = 45
+
+        self.proposed_team_counter = 0
         pass
 
     def increment_leader(self):
@@ -194,10 +196,11 @@ class Avalon:
         player = self.players[self.leader]
         state = self.get_state(self.leader)
         state = self.mask_state(state, "team_prop")
-        self.team = player.pick_team(state)
+        self.team = player.pick_team(state).numpy()
         indices = self.team.argsort()[-self.team_size :]
         self.team = np.zeros(self.N)
         self.team[indices] = 1
+        self.proposed_team_counter += 1
 
     def vote_team(self):
         # everyone sees proposed team and votes
@@ -207,6 +210,9 @@ class Avalon:
             self.team_vote[i] = player.vote_team(state)
 
         self.team_r = self.team_vote.sum() >= self.N / 2
+        if self.team_r:
+            self.proposed_team_counter = 0
+
 
     def show_team(self):
         # everyone sees selected team and who picked it
@@ -260,6 +266,11 @@ class Avalon:
             self.game_result = -1
 
     def is_over(self):
+        #too many proposed teams failed so evil wins
+        if self.proposed_team_counter >= 5:
+            self.game_result = -1
+            return self.game_result
+
         maj = np.ceil(self.N / 2)
         if np.sum(self.quests == -1) >= maj:
             self.game_result = -1
@@ -295,5 +306,6 @@ class AvalonRunner:
         return self.game.get_game_result()
 
 
-runner = AvalonRunner()
-print(runner.run_game())
+if __name__ == '__main__':
+    runner = AvalonRunner()
+    print(runner.run_game())

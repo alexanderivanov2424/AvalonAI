@@ -22,7 +22,6 @@ own side            (1)             -1   1
 own role            (1)             -1   1 2
 
 is leader           (1)                0 1
-is on quest         (1)                0 1
 
 need team prop      (1)                0 1
 need team vote      (1)                0 1
@@ -38,3 +37,23 @@ current quests      (5)             -1 0 1
 team proposition    (5)                0 1
 team selected       (5)                0 1
 team votes          (5)                0 1
+
+team size           (1)                2-4
+quest succeed votes (1)                2-4
+quest fail votes    (1)                2-4
+
+
+
+Action:
+contents            size            values
+###########################################
+proposed team       (5)                0-1
+vote team           (1)                0 1
+vote quest          (1)                0 1
+guess Merlin        (5)                0-1
+guess side          (5)             -1 - 1
+
+
+
+
+.

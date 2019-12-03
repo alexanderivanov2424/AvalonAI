@@ -25,11 +25,16 @@ def train():
         game.guess_merlin()
 
     result = game.get_game_result()
+    true_merlin = tf.constant(game.roles == 2, dtype="float32")
+    true_sides = tf.constant(game.sides == 1, dtype="float32")
 
-    for i,player in enumerate(players):
+    for i, player in enumerate(players):
         with tf.GradientTape() as tape:
-            loss = player.model.loss(result[i])
+            loss = player.loss_function(true_merlin, true_sides, result[i])
         gradients = tape.gradient(loss, player.model.trainable_variables)
-        player.model.optimizer.apply_gradients(zip(gradients, player.model.trainable_variables))
+        player.model.optimizer.apply_gradients(
+            zip(gradients, player.model.trainable_variables)
+        )
+
 
 train()

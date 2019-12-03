@@ -51,9 +51,9 @@ proposed team       (5)                0-1
 vote team           (1)                0 1
 vote quest          (1)                0 1
 guess Merlin        (5)                0-1
-guess side          (5)             -1 - 1
+guess side          (5)                0-1
 
 
 
 
-.
+

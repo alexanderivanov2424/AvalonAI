@@ -43,10 +43,16 @@ class AvalonPlayer(Player):
         self.side_guess_list = []
         self.action_logit_list = []
 
+        self.proposed_team_mask = tf.convert_to_tensor([1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0],dtype='float32')
+        self.team_vote_mask =     tf.convert_to_tensor([0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0],dtype='float32')
+        self.quest_vote_mask =    tf.convert_to_tensor([0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0],dtype='float32')
+        self.merlin_guess_mask =  tf.convert_to_tensor([0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0],dtype='float32')
+        self.side_guess_mask =    tf.convert_to_tensor([0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1],dtype='float32')
+
     def run_model(self, state):
         actions, self.hidden = self.model.call(state, self.hidden)
-        self.merlin_guess_list.append(tf.slice(actions, [7], [5]))
-        self.side_guess_list.append(tf.slice(actions, [12], [5]))
+        self.merlin_guess_list.append(actions * self.merlin_guess_mask)
+        self.side_guess_list.append(actions * self.side_guess_mask)
         return actions
 
     def reset(self):
@@ -55,11 +61,12 @@ class AvalonPlayer(Player):
         self.action_logit_list = []
 
     def loss_function(self, true_sides, true_merlin, did_win):
+        true_merlin = tf.concat([tf.zeros(7),true_merlin,tf.zeros(5)], 0)
+        true_sides = tf.concat([tf.zeros(12),true_sides], 0)
         loss = 0
         reward = 10 if did_win else 1
         for action_logit in reversed(self.action_logit_list):
             diff = action_logit - 0.5
-            print(tf.gradients(action_logit))
             loss += -diff * diff * reward
             reward *= 0.99
         for guess in self.merlin_guess_list:
@@ -77,15 +84,14 @@ class AvalonPlayer(Player):
         # show player state
         # request for team to be selected
         actions = self.run_model(state)
-        self.action_logit_list.append(tf.slice(actions, [0], [5]))
+        self.action_logit_list.append(actions * self.proposed_team_mask)
         return actions[0:5]
 
     def vote_team(self, state):
         # inform player of proposed team
         # request for team vote
         actions = self.run_model(state)
-        self.action_logit_list.append(tf.slice(actions, [5], [1]))
-        print(actions[5])
+        self.action_logit_list.append(actions * self.team_vote_mask)
         return actions[5] > 0.5
 
     def show_team(self, state):
@@ -99,7 +105,7 @@ class AvalonPlayer(Player):
         # show who is on team
         # request for quest vote
         actions = self.run_model(state)
-        self.action_logit_list.append(tf.slice(actions, [6], [1]))
+        self.action_logit_list.append(actions * self.quest_vote_mask)
         return actions[6] > 0.5
 
     def see_quest(self, state):

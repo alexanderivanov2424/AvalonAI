@@ -6,7 +6,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def train(players):
-    player_losses = [None for p in players]
+
+    player = players[0]
 
     with tf.GradientTape(persistent=True) as tape:
         game = Avalon(players)
@@ -26,22 +27,21 @@ def train(players):
         true_merlin = tf.constant(game.roles == 2, dtype="float32")
         true_sides = tf.constant(game.sides == 1, dtype="float32")
 
-        for i, player in enumerate(players):
-            player_losses[i] = player.loss_function(true_sides, true_merlin, result[i])
 
-    for i, player in enumerate(players):
-        loss = player_losses[i]
-        gradients = tape.gradient(loss, player.model.trainable_variables)
-        player.model.optimizer.apply_gradients(zip(gradients, player.model.trainable_variables))
-        player.reset()
+        loss = player.loss_function(true_sides, true_merlin, result[0])
 
+    gradients = tape.gradient(loss, player.model.trainable_variables)
+    player.model.optimizer.apply_gradients(zip(gradients, player.model.trainable_variables))
 
-    return np.mean(player_losses)
+    for p in players:
+        p.reset()
+
+    return loss
 
 
 
 path = '/gpfs/main/home/aivanov6/course/cs1470/Final/AvalonAI/save_{}/AvalonAI'
-version = 0
+version = 4
 
 players = [AvalonPlayer() for i in range(5)]
 
@@ -53,7 +53,7 @@ for player in players:
 
 L = []
 L_mean = []
-for i in range(1000):
+for i in range(500):
     loss = train(players)
     #print("LOSS: ", loss, end='\r')
     #if i % 10 == 0:

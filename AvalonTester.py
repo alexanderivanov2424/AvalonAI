@@ -4,9 +4,9 @@ import tensorflow as tf
 import numpy as np
 from Player import *
 
-path = '/gpfs/main/home/aivanov6/course/cs1470/Final/AvalonAI/saved_model/AvalonAI_'
-version = 1
-path = path + str(version)
+path = '/gpfs/main/home/aivanov6/course/cs1470/Final/AvalonAI/save_{}/AvalonAI'
+version = 3
+path = path.format(version)
 
 players = [AvalonPlayer() for i in range(4)]
 

@@ -234,7 +234,7 @@ class Avalon:
                 continue
             state = self.get_state(i)
             state = self.mask_state(state, "quest_vote")
-            if player.vote_quest(state):
+            if player.vote_quest(state) or self.sides[i]:
                 self.quest_succeed_votes += 1
             else:
                 self.quest_fail_votes += 1
@@ -261,7 +261,7 @@ class Avalon:
                 continue
             state = self.get_state(i)
             state = self.mask_state(state, "none")
-            guesses += player.guess_merlin()
+            guesses += player.guess_merlin(state)
 
         self.merlin_discovered = self.roles[np.argmax(guesses)] == 2
         if self.merlin_discovered:

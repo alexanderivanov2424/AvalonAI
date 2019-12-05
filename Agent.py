@@ -15,13 +15,17 @@ class Model(tf.keras.Model):
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
 
         self.GRU = layers.GRU(
-            64, return_sequences=True, return_state=True, dtype="float32"
+            50, return_sequences=True, return_state=True, dtype="float32", activation="sigmoid",
         )
 
         self.P = Sequential()
-        self.P.add(layers.Dense(200, activation="relu", dtype="float32"))
-        self.P.add(layers.Dense(200, activation="relu", dtype="float32"))
-        self.P.add(layers.Dense(self.action_size, activation="relu", dtype="float32"))
+        self.P.add(layers.Dense(200,activation="sigmoid", dtype="float32"))
+        self.P.add(layers.BatchNormalization())
+        self.P.add(layers.Dense(200,activation="sigmoid", dtype="float32"))
+        self.P.add(layers.BatchNormalization())
+        self.P.add(layers.Dense(200,activation="sigmoid", dtype="float32"))
+        self.P.add(layers.BatchNormalization())
+        self.P.add(layers.Dense(self.action_size, activation="sigmoid", dtype="float32"))
 
     def call(self, inputs, hidden):
         inputs = tf.dtypes.cast(np.array([[inputs]]), dtype="float32")
@@ -73,7 +77,7 @@ class AvalonPlayer(Player):
             loss += sigmoid_cross_entropy_with_logits(true_merlin, guess)
         for guess in self.side_guess_list:
             loss += sigmoid_cross_entropy_with_logits(true_sides, guess)
-        return loss
+        return loss + reward
 
     def see_start(self, state):
         # show player start state

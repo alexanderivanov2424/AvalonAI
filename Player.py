@@ -1,4 +1,5 @@
 import numpy as np
+import tensorflow as tf
 
 class Player:
 
@@ -69,7 +70,7 @@ class HumanPlayer(Player):
         team = input("Team list: ")
         print()
         team_list = team.split(' ')
-        return np.array(team_list)
+        return tf.convert_to_tensor(np.array(team_list))
 
     def vote_team(self,state):
         print("Proposed Team: ", state[27:32])

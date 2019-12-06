@@ -15,15 +15,15 @@ class Model(tf.keras.Model):
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
 
         self.GRU = layers.GRU(
-            50, return_sequences=True, return_state=True, dtype="float32", activation="sigmoid",
+            1, return_sequences=True, return_state=True, dtype="float32",
         )
 
         self.P = Sequential()
-        self.P.add(layers.Dense(200,activation="sigmoid", dtype="float32"))
+        self.P.add(layers.Dense(100,activation="relu", dtype="float32",use_bias=False))
         self.P.add(layers.BatchNormalization())
-        self.P.add(layers.Dense(200,activation="sigmoid", dtype="float32"))
+        self.P.add(layers.Dense(100,activation="relu", dtype="float32",use_bias=False))
         self.P.add(layers.BatchNormalization())
-        self.P.add(layers.Dense(200,activation="sigmoid", dtype="float32"))
+        self.P.add(layers.Dense(100,activation="relu", dtype="float32",use_bias=False))
         self.P.add(layers.BatchNormalization())
         self.P.add(layers.Dense(self.action_size, activation="sigmoid", dtype="float32"))
 
@@ -68,15 +68,15 @@ class AvalonPlayer(Player):
         true_merlin = tf.concat([tf.zeros(7),true_merlin,tf.zeros(5)], 0)
         true_sides = tf.concat([tf.zeros(12),true_sides], 0)
         loss = 0
-        reward = 10 if did_win else 1
+        reward = 10 if did_win else -10
         for action_logit in reversed(self.action_logit_list):
             diff = action_logit - 0.5
             loss += -diff * diff * reward
             reward *= 0.99
-        for guess in self.merlin_guess_list:
-            loss += sigmoid_cross_entropy_with_logits(true_merlin, guess)
-        for guess in self.side_guess_list:
-            loss += sigmoid_cross_entropy_with_logits(true_sides, guess)
+        # for guess in self.merlin_guess_list:
+        #     loss += sigmoid_cross_entropy_with_logits(true_merlin, guess)
+        # for guess in self.side_guess_list:
+        #     loss += sigmoid_cross_entropy_with_logits(true_sides, guess)
         return loss + reward
 
     def see_start(self, state):
@@ -89,14 +89,14 @@ class AvalonPlayer(Player):
         # request for team to be selected
         actions = self.run_model(state)
         self.action_logit_list.append(actions * self.proposed_team_mask)
-        return actions[0:5]
+        return np.array(actions[0:5]) > np.random.uniform(size=5)
 
     def vote_team(self, state):
         # inform player of proposed team
         # request for team vote
         actions = self.run_model(state)
         self.action_logit_list.append(actions * self.team_vote_mask)
-        return actions[5] > 0.5
+        return actions[5] > np.random.uniform()
 
     def show_team(self, state):
         # inform player of selected team (or if no team picked)
@@ -110,7 +110,7 @@ class AvalonPlayer(Player):
         # request for quest vote
         actions = self.run_model(state)
         self.action_logit_list.append(actions * self.quest_vote_mask)
-        return actions[6] > 0.5
+        return actions[6] > np.random.uniform()
 
     def see_quest(self, state):
         # show quest result
@@ -121,4 +121,4 @@ class AvalonPlayer(Player):
     def guess_merlin(self, state):
         # request guess for merlin
         actions = self.run_model(state)
-        return tf.slice(actions, [7], [5])
+        return np.array(actions[7:12]) > np.random.uniform(size=5)

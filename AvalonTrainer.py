@@ -5,6 +5,7 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
+
 def train(players):
     player_losses = [None for p in players]
 
@@ -29,6 +30,7 @@ def train(players):
         for i, player in enumerate(players):
             player_losses[i] = player.loss_function(true_sides, true_merlin, result[i])
 
+
     for i, player in enumerate(players):
         loss = player_losses[i]
         gradients = tape.gradient(loss, player.model.trainable_variables)
@@ -41,7 +43,7 @@ def train(players):
 
 
 path = '/gpfs/main/home/aivanov6/course/cs1470/Final/AvalonAI/save_{}/AvalonAI'
-version = 0
+version = 1
 
 players = [AvalonPlayer() for i in range(5)]
 
@@ -59,13 +61,13 @@ for i in range(1000):
     #if i % 10 == 0:
     #    print()
     L.append(loss)
-    L = L[-100:]
-    L_mean.append(np.mean(L))
+    L_mean.append(np.mean(L[-100:]))
     plt.plot(L_mean)
+    plt.plot(L)
     plt.draw()
     plt.pause(.001)
     plt.cla()
 
     if i % 50 == 0:
         print("SAVE")
-        players[0].model.save_weights(path.format(version + 1))
+        players[0].model.save_weights(path.format(version))

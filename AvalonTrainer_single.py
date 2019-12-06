@@ -5,6 +5,8 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
+
+
 def train(players):
 
     player = players[0]
@@ -41,7 +43,7 @@ def train(players):
 
 
 path = '/gpfs/main/home/aivanov6/course/cs1470/Final/AvalonAI/save_{}/AvalonAI'
-version = 4
+version = 1
 
 players = [AvalonPlayer() for i in range(5)]
 

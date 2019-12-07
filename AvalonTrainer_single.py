@@ -2,12 +2,13 @@ from Agent import AvalonPlayer
 from Game import Avalon
 import tensorflow as tf
 import numpy as np
+from Player import *
 
 import matplotlib.pyplot as plt
 
 
 
-def train(players):
+def train(players, i):
 
     player = players[0]
 
@@ -38,12 +39,12 @@ def train(players):
     for p in players:
         p.reset()
 
-    return loss
+    return np.mean(loss)
 
 
 
 path = '/gpfs/main/home/aivanov6/course/cs1470/Final/AvalonAI/save_{}/AvalonAI'
-version = 1
+version = 2
 
 players = [AvalonPlayer() for i in range(5)]
 
@@ -53,21 +54,23 @@ for player in players:
     except:
         pass
 
+player_to_train = np.random.randint(0,5)
+
 L = []
 L_mean = []
 for i in range(500):
-    loss = train(players)
+    loss = train(players,player_to_train)
     #print("LOSS: ", loss, end='\r')
     #if i % 10 == 0:
     #    print()
     L.append(loss)
-    L = L[-100:]
-    L_mean.append(np.mean(L))
+    L_mean.append(np.mean(L[-100:]))
     plt.plot(L_mean)
+    plt.plot(L)
     plt.draw()
     plt.pause(.001)
     plt.cla()
 
-    if i % 50 == 0:
+    if i % 1 == 0:
         print("SAVE")
-        players[0].model.save_weights(path.format(version + 1))
+        players[player_to_train].model.save_weights(path.format(version + 1))

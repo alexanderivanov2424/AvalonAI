@@ -69,4 +69,9 @@ for i in range(1000):
 
     if i % 50 == 0:
         print("SAVE")
-        players[0].model.save_weights(path.format(version))
+        players[np.random.randint(0, 5)].model.save_weights(path.format(version + 1))
+        for player in players:
+            try:
+                player.model.load_weights(path.format(version))
+            except:
+                pass

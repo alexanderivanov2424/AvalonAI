@@ -48,6 +48,9 @@ class HumanPlayer(Player):
         self.quest_info = []
         pass
 
+    def reset(self):
+        pass
+
     def role_to_name(self, role):
         if role == -1:
             return "EVIL"

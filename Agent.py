@@ -15,7 +15,7 @@ class Model(tf.keras.Model):
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
 
         self.GRU = layers.GRU(
-            1, return_sequences=True, return_state=True, dtype="float32",
+            50, return_sequences=True, return_state=True, dtype="float32",
         )
 
         self.P = Sequential()
@@ -63,6 +63,7 @@ class AvalonPlayer(Player):
         self.merlin_guess_list = []
         self.side_guess_list = []
         self.action_logit_list = []
+        self.hidden = None
 
     def loss_function(self, true_sides, true_merlin, did_win):
         true_merlin = tf.concat([tf.zeros(7),true_merlin,tf.zeros(5)], 0)
@@ -89,6 +90,7 @@ class AvalonPlayer(Player):
         # request for team to be selected
         actions = self.run_model(state)
         self.action_logit_list.append(actions * self.proposed_team_mask)
+        print("$$$ ",np.array(actions[0:5]))
         return np.array(actions[0:5]) > np.random.uniform(size=5)
 
     def vote_team(self, state):
@@ -121,4 +123,5 @@ class AvalonPlayer(Player):
     def guess_merlin(self, state):
         # request guess for merlin
         actions = self.run_model(state)
+        print("$$$ ",np.array(actions[7:12]))
         return np.array(actions[7:12]) > np.random.uniform(size=5)

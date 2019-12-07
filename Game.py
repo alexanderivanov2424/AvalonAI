@@ -234,7 +234,7 @@ class Avalon:
                 continue
             state = self.get_state(i)
             state = self.mask_state(state, "quest_vote")
-            if player.vote_quest(state) == 1 or self.sides[i] == 1:
+            if np.array(player.vote_quest(state)) == 1 or self.sides[i] == 1:
                 self.quest_succeed_votes += 1
             else:
                 self.quest_fail_votes += 1

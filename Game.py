@@ -268,7 +268,7 @@ class Avalon:
             self.game_result = -1
 
     def is_over(self):
-        #too many proposed teams failed so evil wins
+        # too many proposed teams failed so evil wins
         if self.proposed_team_counter >= 5:
             self.game_result = -1
             return self.game_result
@@ -308,6 +308,6 @@ class AvalonRunner:
         return self.game.get_game_result()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     runner = AvalonRunner()
     print(runner.run_game())

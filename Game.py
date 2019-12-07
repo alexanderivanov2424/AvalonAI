@@ -193,14 +193,13 @@ class Avalon:
     def get_team(self):
         # have leader select team
         self.team_size = self.team_sizes[self.current_quest]
-        player = self.players[self.leader]
+        leader = self.players[self.leader]
         state = self.get_state(self.leader)
         state = self.mask_state(state, "team_prop")
-        self.team = player.pick_team(state)
-        indices = self.team.argsort()[-self.team_size :]
+        self.team = leader.pick_team(state)
+        on_team = self.team.argsort()[-self.team_size :]
         self.team = np.zeros(self.N)
-        self.team[indices] = 1
-        self.proposed_team_counter += 1
+        self.team[on_team] = 1
 
     def vote_team(self):
         # everyone sees proposed team and votes

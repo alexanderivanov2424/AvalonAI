@@ -30,19 +30,18 @@ def train(players):
         for i, player in enumerate(players):
             player_losses[i] = player.loss_function(true_sides, true_merlin, result[i])
 
-
     for i, player in enumerate(players):
         loss = player_losses[i]
         gradients = tape.gradient(loss, player.model.trainable_variables)
-        player.model.optimizer.apply_gradients(zip(gradients, player.model.trainable_variables))
+        player.model.optimizer.apply_gradients(
+            zip(gradients, player.model.trainable_variables)
+        )
         player.reset()
-
 
     return np.mean(player_losses)
 
 
-
-path = '/gpfs/main/home/aivanov6/course/cs1470/Final/AvalonAI/save_{}/AvalonAI'
+path = "./save_{}/AvalonAI"
 version = 1
 
 players = [AvalonPlayer() for i in range(5)]
@@ -57,15 +56,15 @@ L = []
 L_mean = []
 for i in range(1000):
     loss = train(players)
-    #print("LOSS: ", loss, end='\r')
-    #if i % 10 == 0:
+    # print("LOSS: ", loss, end='\r')
+    # if i % 10 == 0:
     #    print()
     L.append(loss)
     L_mean.append(np.mean(L[-100:]))
     plt.plot(L_mean)
     plt.plot(L)
     plt.draw()
-    plt.pause(.001)
+    plt.pause(0.001)
     plt.cla()
 
     if i % 50 == 0:

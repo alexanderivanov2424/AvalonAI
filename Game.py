@@ -149,13 +149,14 @@ class Avalon:
         mask[0] = 1  # always show own side
         mask[1] = 1  # always show own role
         mask[2] = 1  # always show leader
+        mask[7:22] = 1  # always show visible sides, roles, leaders
         mask[22:27] = 1  # always show current quests
         mask[42] = 1  # always show team size
 
         if mode == "all":
             mask[:] = 1
         if mode == "start":
-            mask[7:22] = 1  # show visible sides, roles, leaders
+            pass
         if mode == "team_prop":
             mask[3] = 1  # nead team prop
             mask[17:22] = 1  # show leaders

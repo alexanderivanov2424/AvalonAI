@@ -209,11 +209,6 @@ class Avalon:
             self.team_vote[i] = player.vote_team(state)
 
         self.team_r = self.team_vote.sum() >= self.N / 2
-        if self.team_r:
-            self.proposed_team_counter = 0
-        else:
-            self.increment_leader()
-
 
     def show_team(self):
         # everyone sees selected team and who picked it
@@ -222,6 +217,12 @@ class Avalon:
             state = self.get_state(i)
             state = self.mask_state(state, team_mask)
             player.show_team(state)
+
+        if self.team_r:
+            self.proposed_team_counter = 0
+        else:
+            self.increment_leader()
+            self.proposed_team_counter += 1
 
     def vote_quest(self):
         # members of quest vote

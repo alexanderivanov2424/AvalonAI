@@ -63,6 +63,7 @@ class AvalonPlayer(Player):
         self.merlin_guess_list = []
         self.side_guess_list = []
         self.action_logit_list = []
+        self.hidden = None
 
     def loss_function(self, true_sides, true_merlin, did_win):
         true_merlin = tf.concat([tf.zeros(7),true_merlin,tf.zeros(5)], 0)

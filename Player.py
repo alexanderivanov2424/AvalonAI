@@ -47,6 +47,9 @@ class HumanPlayer(Player):
     def __init__(self):
         pass
 
+    def reset(self):
+        pass
+
     def role_to_name(self, role):
         if role == -1:
             return 'EVIL'

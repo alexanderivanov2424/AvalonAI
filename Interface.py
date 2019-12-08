@@ -1,25 +1,59 @@
-
 from Agent import AvalonPlayer
-from Game import Avalon
+from Game import GameStateBuilder, GameState, Avalon
 import tensorflow as tf
 import numpy as np
 from Player import *
+from AvalonTypes import *
 
 
-path = './save_{}/AvalonAI'
-version = 4
+path = "./save_{}/AvalonAI"
+version = 2
 path = path.format(version)
 
 AI = AvalonPlayer()
 
 AI.model.load_weights(path)
 
+N = self.N = 5
+self.game_state = (
+    GameStateBuilder()
+    # static knowledge
+    .add_field("own_side", len(Side))
+    .add_field("own_role", len(Role))
+    .add_array("visible_sides", N, len(VisibleSide))
+    .add_array("visible_roles", N, len(VisibleRole))
+    # game meta info
+    .add_field("phase", len(Phase))
+    .add_field("leader", N)
+    .add_field("quest", N)
+    .add_number("quest_num")
+    .add_array("quest_results", N, len(QuestResult))
+    .add_number("consec_rejects")
+    # team building phase info
+    .add_number("need_team_prop")
+    .add_number("need_team_vote")
+    .add_field("team_prop", N)
+    .add_field("team_votes", N)
+    .add_number("team_size")
+    # quest phase info
+    .add_number("need_quest_vote")
+    .add_field("quest_team", N)
+    .add_number("quest_success_votes")
+    .add_number("quest_fail_votes")
+    # unused
+    # .add_field("is_leader", 1)
+    # .add_field("who_is_leader", N) -> "leader"
+    # .add_field("current_quests", N) -> "quest_results"
+    # .add_field("team_selected", N) -> "quest_team"
+    .build()
+)
+
 state = np.zeros(45)
 leader = 0
 quests = np.zeros(5)
 current_quest = 0
 
-team_sizes = [2,3,2,3,3]
+team_sizes = [2, 3, 2, 3, 3]
 
 
 def rtos(role):
@@ -31,6 +65,7 @@ def rtos(role):
         return 1
     if role == 2:
         return 1
+
 
 a = int(input("Start role? (-1 0 1 2): "))
 if a == -1:
@@ -44,7 +79,7 @@ state[1] = a
 
 leader = int(input("Who is Leader? (i): "))
 
-roles = input("Visible Roles? (-1 0 1 2): ").split(' ')
+roles = input("Visible Roles? (-1 0 1 2): ").split(" ")
 roles = np.array([int(r) for r in roles])
 sides = np.array([rtos(r) for r in roles])
 
@@ -77,18 +112,17 @@ while True:
         state[3] = 0
         input("CONTINUE")
 
-
     state[4] = 1
     state[12 + leader] = 1
-    prop = [float(i) for i in input("Team Prop? (0 1): ").split(' ')]
+    prop = [float(i) for i in input("Team Prop? (0 1): ").split(" ")]
     state[27:32] = np.array(prop)
-    print("TEAM VOTE: ",AI.vote_team(state))
+    print("TEAM VOTE: ", AI.vote_team(state))
     state[4] = 0
     state[12 + leader] = 0
     state[27:32] = np.zeros(5)
     input("CONTINUE")
 
-    votes = [int(i) for i in input("Team Votes? (0 1): ").split(' ')]
+    votes = [int(i) for i in input("Team Votes? (0 1): ").split(" ")]
     if np.sum(votes) >= 3:
         state[32:37] = prop
         state[12 + leader] = 1
@@ -112,7 +146,7 @@ while True:
     if prop[4] == 1:
         state[5] = 1
         state[32:37] = prop
-        print("QUEST VOTE: ",AI.vote_quest(state))
+        print("QUEST VOTE: ", AI.vote_quest(state))
         state[5] = 0
         state[32:37] = np.zeros(5)
         input("CONTINUE")
@@ -133,11 +167,11 @@ while True:
     state[44] = 0
     state[32:37] = np.zeros(5)
 
-    if input("GUESS MERLIN (y)") == 'y':
+    if input("GUESS MERLIN (y)") == "y":
         print("MERLIN GUESS: ", AI.guess_merlin(state))
 
     current_quest += 1
     leader += 1
     leader %= 5
     input("CONTINUE END OF ROUND")
-    print("\n"*3)
+    print("\n" * 3)

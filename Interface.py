@@ -7,7 +7,7 @@ from Player import *
 
 
 path = './save_{}/AvalonAI'
-version = 2
+version = 4
 path = path.format(version)
 
 AI = AvalonPlayer()

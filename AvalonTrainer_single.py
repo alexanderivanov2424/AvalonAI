@@ -43,8 +43,9 @@ def train(players, i):
 
 
 
-path = '/gpfs/main/home/aivanov6/course/cs1470/Final/AvalonAI/save_{}/AvalonAI'
-version = 2
+path = './{}/AvalonAI'
+version = "save_2"
+new_version = "save_3"
 
 players = [AvalonPlayer() for i in range(5)]
 
@@ -73,4 +74,4 @@ for i in range(500):
 
     if i % 1 == 0:
         print("SAVE")
-        players[player_to_train].model.save_weights(path.format(version + 1))
+        players[player_to_train].model.save_weights(path.format(new_version))

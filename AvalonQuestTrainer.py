@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 
 def train(players):
-    player_losses = [None for p in players]
+    player_losses = [[] for p in players]
 
     with tf.GradientTape(persistent=True) as tape:
         game = Avalon(players)
@@ -19,6 +19,11 @@ def train(players):
             if game.team_r:  # extracting vote result
                 game.vote_quest()
                 game.show_quest()
+                #get loss by quest
+                quest_result = game.quests[game.current_quest-1]
+                print(quest_result)
+                for i, player in enumerate(players):
+                    player_losses[i].append(player.loss_quest(game.sides[i] == quest_result))
 
         if game.winning_side() == 1:
             game.guess_merlin()
@@ -28,22 +33,21 @@ def train(players):
         true_sides = tf.constant(game.sides == 1, dtype="float32")
 
         for i, player in enumerate(players):
-            player_losses[i] = player.loss_function(true_sides, true_merlin, result[i])
+            player_losses[i].append(player.loss_function(true_sides, true_merlin, result[i]))
 
     for i, player in enumerate(players):
-        loss = player_losses[i]
-        gradients = tape.gradient(loss, player.model.trainable_variables)
-        player.model.optimizer.apply_gradients(
-            zip(gradients, player.model.trainable_variables)
-        )
+        for loss in player_losses[i]:
+            gradients = tape.gradient(loss, player.model.trainable_variables)
+            player.model.optimizer.apply_gradients(
+                zip(gradients, player.model.trainable_variables)
+            )
         player.reset()
 
     return np.mean(player_losses)
 
 
 path = "./{}/AvalonAI"
-version = "save_1"
-new_version = "save_2"
+version = "save_quest_loss"
 
 players = [AvalonPlayer() for i in range(5)]
 
@@ -70,9 +74,9 @@ for i in range(1000):
 
     if i % 50 == 0:
         print("SAVE")
-        players[np.random.randint(0, 5)].model.save_weights(path.format(new_version))
+        players[np.random.randint(0, 5)].model.save_weights(path.format(version))
         for player in players:
             try:
-                player.model.load_weights(path.format(new_version))
+                player.model.load_weights(path.format(version))
             except:
                 pass

@@ -69,16 +69,25 @@ class AvalonPlayer(Player):
         true_merlin = tf.concat([tf.zeros(7),true_merlin,tf.zeros(5)], 0)
         true_sides = tf.concat([tf.zeros(12),true_sides], 0)
         loss = 0
-        reward = 10 if did_win else -10
+        reward = 100 if did_win else -100
         for action_logit in reversed(self.action_logit_list):
             diff = action_logit - 0.5
             loss += -diff * diff * reward
             reward *= 0.99
-        for guess in self.merlin_guess_list:
-            loss += sigmoid_cross_entropy_with_logits(true_merlin, guess)
-        for guess in self.side_guess_list:
-            loss += sigmoid_cross_entropy_with_logits(true_sides, guess)
-        return loss + reward
+        # for guess in self.merlin_guess_list:
+        #     loss += sigmoid_cross_entropy_with_logits(true_merlin, guess)
+        # for guess in self.side_guess_list:
+        #     loss += sigmoid_cross_entropy_with_logits(true_sides, guess)
+        return loss
+
+    def loss_quest(self, quest_result):
+        loss = 0
+        reward = 10 if quest_result else -10
+        for action_logit in reversed(self.action_logit_list):
+            diff = action_logit - 0.5
+            loss += -diff * diff * reward
+            reward *= 0.99
+        return loss
 
     def see_start(self, state):
         # show player start state

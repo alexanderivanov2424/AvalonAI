@@ -4,8 +4,8 @@ import tensorflow as tf
 import numpy as np
 from Player import *
 
-path = "./save_{}/AvalonAI"
-version = 1
+path = "./{}/AvalonAI"
+version = "save_3"
 path = path.format(version)
 
 players = [AvalonPlayer() for i in range(4)]

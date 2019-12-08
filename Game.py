@@ -1,8 +1,151 @@
 import numpy as np
 import tensorflow as tf
 from Player import *
+from AvalonTypes import *
 
 # http://upload.snakesandlattes.com/rules/r/ResistanceAvalon.pdf
+
+
+class GameState:
+    def __init__(self, fields, size):
+        self.state = np.zeros(size)
+        self.fields = fields
+
+    def __len__(self):
+        return len(self.state)
+
+    def _get_field(self, key):
+        if key in self.fields:
+            return self.fields[key]
+        else:
+            raise KeyError(f"key '{key}' not found")
+
+    def _get_slice(self, key):
+        if key.start is not None and key.stop is not None:
+            if key.step is None:
+                return self.state[key]
+            else:
+                start, stop, step = key.start, key.stop, key.step
+                return self.state[start:stop].reshape((-1, step)).argmax(axis=1)
+        elif key == slice(None):
+            return self.state
+        else:
+            raise KeyError("ill-formed slice")
+
+    def _get_array_index(self, key, arr_key):
+        key = self._get_field(key)
+        start, stop, step = key.start, key.stop, key.step
+        if isinstance(arr_key, int):
+            start += arr_key * step
+            return np.argmax(self.state[start : start + step])
+        elif isinstance(arr_key, slice):
+            if arr_key == slice(None):
+                return self.state[start:stop].reshape((-1, step)).argmax(axis=1)
+            else:
+                raise NotImplementedError("slicing the array")
+        else:
+            raise KeyError("array key must be an int or slice")
+
+    def __getitem__(self, key):
+        if isinstance(key, str):
+            key = self._get_field(key)
+
+        if isinstance(key, int):  # number
+            return self.state[key]
+        elif isinstance(key, slice):  # field, set, or array slice
+            return self._get_slice(key)
+        elif isinstance(key, tuple):  # array index or slice
+            return self._get_array_index(*key)
+        else:
+            raise KeyError("key must be a string, int, slice, tuple(string, int/slice)")
+
+    def _set_slice(self, key, value):
+        # field, set, or array slice
+        if key.start is not None and key.stop is not None:
+            if key.step is None:  # field or set slice
+                if isinstance(value, int):  # field
+                    self.state[key] = 0
+                    self.state[key.start + value] = 1
+                elif hasattr(type(value), "__iter__"):  # set
+                    self.state[key] = 0
+                    start = key.start
+                    for index in value:
+                        self.state[start + index] = 1
+                else:
+                    raise ValueError("value must be an int or iterable")
+            else:  # array slice
+                raise NotImplementedError("setting array slice")
+        # whole slice
+        elif key == slice(None):
+            if isinstance(value, np.ndarray):
+                self.state = value
+            else:
+                raise ValueError("value was not a numpy array")
+        else:
+            raise KeyError("ill-formed slice")
+
+    def _set_array_index(self, key, arr_key, value):
+        key = self._get_field(key)
+        start, stop, step = key.indices(key.stop)
+        arr_idx = range(start, stop, step)
+        if isinstance(arr_key, int):
+            arr_start = arr_idx[arr_key]
+            self.state[arr_start : arr_start + step] = 0
+            self.state[arr_start + value] = 1
+        elif isinstance(arr_key, slice):
+            for i, val in zip(arr_idx[arr_key], value):
+                self.state[i : i + step] = 0
+                self.state[i + val] = 1
+        else:
+            raise KeyError("array key must be an int or slice")
+
+    def __setitem__(self, key, value):
+        if isinstance(key, str):
+            key = self._get_field(key)
+
+        if isinstance(key, int):  # number
+            self.state[key] = value
+        elif isinstance(key, slice):  # field, set, or array slice
+            self._set_slice(key, value)
+        elif isinstance(key, tuple):  # array index or slice
+            self._set_array_index(*key, value)
+        else:
+            raise KeyError("key must be a string, int, slice, tuple(string, int/slice)")
+
+    def get_field(self, key):
+        return np.argmax(self.__getitem__(key))
+
+    def get_elements(self, key):
+        return np.nonzero(self.__getitem__(key))[0]
+
+
+class GameStateBuilder:
+    def __init__(self):
+        self.fields = {}
+        self.size = 0
+
+    def add_number(self, field_name):
+        assert field_name not in self.fields, f"'{field_name}' already a field"
+        self.fields[field_name] = self.size
+        self.size += 1
+        return self
+
+    def add_field(self, field_name, size):
+        assert field_name not in self.fields, f"'{field_name}' already a field"
+        assert size > 1
+        self.fields[field_name] = slice(self.size, self.size + size)
+        self.size += size
+        return self
+
+    def add_array(self, field_name, size, num_vals):
+        assert field_name not in self.fields, f"'{field_name}' already a field"
+        arr_size = size * num_vals
+        self.fields[field_name] = slice(self.size, self.size + arr_size, num_vals)
+        self.size += arr_size
+        return self
+
+    def build(self):
+        return GameState(self.fields, self.size)
 
 
 class Avalon:

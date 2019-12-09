@@ -99,7 +99,7 @@ class AvalonPlayer(Player):
         # request for team to be selected
         actions = self.run_model(state)
         self.action_logit_list.append(actions * self.proposed_team_mask)
-        print("$$$TEAM$$$ ",np.array(actions[0:5]))
+        #print("$$$TEAM$$$ ",np.array(actions[0:5]))
         return np.array(actions[0:5]) > np.random.normal(.5,.1,size=5)
 
     def vote_team(self, state):

@@ -1,5 +1,5 @@
 from enum import IntEnum
-
+import numpy as np
 
 class Side(IntEnum):
     GOOD = 0

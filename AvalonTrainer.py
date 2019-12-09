@@ -42,8 +42,8 @@ def train(players):
 
 
 path = "./{}/AvalonAI"
-version = "save_1"
-new_version = "save_2"
+version = "evil_prob"
+new_version = "evil_prob"
 
 players = [AvalonPlayer() for i in range(5)]
 
@@ -55,7 +55,7 @@ for player in players:
 
 L = []
 L_mean = []
-for i in range(1000):
+for i in range(10000):
     loss = train(players)
     # print("LOSS: ", loss, end='\r')
     # if i % 10 == 0:

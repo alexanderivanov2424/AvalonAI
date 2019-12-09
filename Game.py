@@ -243,6 +243,11 @@ class Avalon:
         self.current_quest = 0
         self.quests = np.zeros(self.N)
 
+        self.team_matrix = []
+        self.fail_votes = []
+        self.evil_probs = np.zeros(self.N)
+        self.evil_probs = .4
+
         self.team = np.zeros(self.N)
         self.team_vote = np.zeros(self.N)
 
@@ -255,7 +260,7 @@ class Avalon:
 
         self.game_result = 0
         self.merlin_discovered = False
-        self.state_size = 45
+        self.state_size = 50
 
         self.proposed_team_counter = 0
         pass
@@ -319,6 +324,8 @@ class Avalon:
         state[43] = self.quest_succeed_votes
         state[44] = self.quest_fail_votes
 
+        state[45:50] = self.evil_probs
+
         return state
 
     def mask_state(self, state, mode="all"):
@@ -329,6 +336,7 @@ class Avalon:
         mask[7:22] = 1  # always show visible sides, roles, leaders
         mask[22:27] = 1  # always show current quests
         mask[42] = 1  # always show team size
+        mask[45:50] = 1
 
         if mode == "all":
             mask[:] = 1
@@ -420,6 +428,11 @@ class Avalon:
         assert self.quest_succeed_votes + self.quest_fail_votes == self.team_size
         self.quest_r = not self.quest_fail_votes
         self.quests[self.current_quest] = 2 * self.quest_r - 1
+
+        #prep for calculating probabilities
+        self.fail_votes.append(self.quest_fail_votes)
+        self.team_matrix.append(self.team)
+        self.evil_probs = QuestAnalyzer.compute(np.array(self.team_matrix), np.array(self.fail_votes))
 
     def show_quest(self):
         # everyone sees quest result

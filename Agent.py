@@ -19,11 +19,11 @@ class Model(tf.keras.Model):
         )
 
         self.P = Sequential()
-        self.P.add(layers.Dense(100,activation="relu", dtype="float32",use_bias=False))
+        self.P.add(layers.Dense(100,activation="sigmoid", dtype="float32",use_bias=False))
         self.P.add(layers.BatchNormalization())
-        self.P.add(layers.Dense(100,activation="relu", dtype="float32",use_bias=False))
+        self.P.add(layers.Dense(100,activation="sigmoid", dtype="float32",use_bias=False))
         self.P.add(layers.BatchNormalization())
-        self.P.add(layers.Dense(100,activation="relu", dtype="float32",use_bias=False))
+        self.P.add(layers.Dense(100,activation="sigmoid", dtype="float32",use_bias=False))
         self.P.add(layers.BatchNormalization())
         self.P.add(layers.Dense(self.action_size, activation="sigmoid", dtype="float32"))
 
@@ -99,7 +99,7 @@ class AvalonPlayer(Player):
         # request for team to be selected
         actions = self.run_model(state)
         self.action_logit_list.append(actions * self.proposed_team_mask)
-        print("$$$ ",np.array(actions[0:5]))
+        print("$$$TEAM$$$ ",np.array(actions[0:5]))
         return np.array(actions[0:5]) > np.random.normal(.5,.1,size=5)
 
     def vote_team(self, state):
@@ -132,5 +132,5 @@ class AvalonPlayer(Player):
     def guess_merlin(self, state):
         # request guess for merlin
         actions = self.run_model(state)
-        print("$$$ ",np.array(actions[7:12]))
+        print("$$$MERLIN$$$ ",np.array(actions[7:12]))
         return np.array(actions[7:12]) > np.random.normal(.5,.1,size=5)

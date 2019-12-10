@@ -5,7 +5,7 @@ import numpy as np
 from Player import *
 
 path = "./{}/AvalonAI"
-version = "save_quest_loss"
+version = "evil_prob"
 path = path.format(version)
 
 players = [AvalonPlayer() for i in range(4)]

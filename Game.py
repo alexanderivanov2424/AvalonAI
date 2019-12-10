@@ -5,6 +5,9 @@ from AvalonTypes import *
 
 # http://upload.snakesandlattes.com/rules/r/ResistanceAvalon.pdf
 
+def rotate(L,i):
+    return np.append(L[i:],L[:i])
+
 
 class GameState:
     def __init__(self, fields, size):
@@ -246,7 +249,7 @@ class Avalon:
         self.team_matrix = []
         self.fail_votes = []
         self.evil_probs = np.zeros(self.N)
-        self.evil_probs = .4
+        self.evil_probs = np.array([.4 for i in range(self.N)])
 
         self.team = np.zeros(self.N)
         self.team_vote = np.zeros(self.N)
@@ -310,21 +313,21 @@ class Avalon:
         state[5] = 1  # need quest vote
         state[6] = self.quest_r
 
-        state[7:12] = self.get_visible_sides(state[1], i)
-        state[12:17] = self.get_visible_roles(state[1], i)
-        state[17:22] = self.get_visible_leader()
+        state[7:12] = rotate(self.get_visible_sides(state[1], i),i)
+        state[12:17] = rotate(self.get_visible_roles(state[1], i),i)
+        state[17:22] = rotate(self.get_visible_leader(),i)
 
         state[22:27] = self.quests
 
-        state[27:32] = self.team  # proposed team
-        state[32:37] = self.team  # selected team
-        state[37:42] = self.team_vote  # who voted how
+        state[27:32] = rotate(self.team,i)  # proposed team
+        state[32:37] = rotate(self.team,i)  # selected team
+        state[37:42] = rotate(self.team_vote,i)  # who voted how
 
         state[42] = self.team_size
         state[43] = self.quest_succeed_votes
         state[44] = self.quest_fail_votes
 
-        state[45:50] = self.evil_probs
+        state[45:50] = rotate(self.evil_probs,i)
 
         return state
 
@@ -382,7 +385,7 @@ class Avalon:
         leader = self.players[self.leader]
         state = self.get_state(self.leader)
         state = self.mask_state(state, "team_prop")
-        self.team = leader.pick_team(state)
+        self.team = rotate(leader.pick_team(state),-self.leader)
         on_team = self.team.argsort()[-self.team_size :]
         self.team = np.zeros(self.N)
         self.team[on_team] = 1
@@ -392,7 +395,7 @@ class Avalon:
         for i, player in enumerate(self.players):
             state = self.get_state(i)
             state = self.mask_state(state, "team_vote")
-            self.team_vote[i] = player.vote_team(state)
+            self.team_vote[i] = player.vote_team(state) > .5
 
         self.team_r = self.team_vote.sum() >= self.N / 2
 
@@ -452,7 +455,7 @@ class Avalon:
                 continue
             state = self.get_state(i)
             state = self.mask_state(state, "none")
-            guesses += player.guess_merlin(state)
+            guesses += rotate(player.guess_merlin(state),-i)
 
         self.merlin_discovered = self.roles[np.argmax(guesses)] == 2
         if self.merlin_discovered:

@@ -15,16 +15,16 @@ class Model(tf.keras.Model):
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
 
         self.GRU = layers.GRU(
-            100, return_sequences=True, return_state=True, dtype="float32",
+            50, return_sequences=True, return_state=True, dtype="float32",
         )
 
         self.P = Sequential()
-        self.P.add(layers.Dense(100,activation="sigmoid", dtype="float32",use_bias=False))
-        self.P.add(layers.BatchNormalization())
-        self.P.add(layers.Dense(100,activation="sigmoid", dtype="float32",use_bias=False))
-        self.P.add(layers.BatchNormalization())
-        self.P.add(layers.Dense(100,activation="sigmoid", dtype="float32",use_bias=False))
-        self.P.add(layers.BatchNormalization())
+        self.P.add(layers.Dense(50,activation="relu", dtype="float32",use_bias=False))
+        #self.P.add(layers.BatchNormalization())
+        #self.P.add(layers.Dense(100,activation="sigmoid", dtype="float32",use_bias=False))
+        #self.P.add(layers.BatchNormalization())
+        #self.P.add(layers.Dense(100,activation="sigmoid", dtype="float32",use_bias=False))
+        #self.P.add(layers.BatchNormalization())
         self.P.add(layers.Dense(self.action_size, activation="sigmoid", dtype="float32"))
 
     def call(self, inputs, hidden):
@@ -82,7 +82,7 @@ class AvalonPlayer(Player):
 
     def loss_quest(self, quest_result):
         loss = 0
-        reward = 10 if quest_result else -10
+        reward = 10 if quest_result else 0
         for action_logit in reversed(self.action_logit_list):
             diff = action_logit - 0.5
             loss += -diff * diff * reward
@@ -100,14 +100,14 @@ class AvalonPlayer(Player):
         actions = self.run_model(state)
         self.action_logit_list.append(actions * self.proposed_team_mask)
         #print("$$$TEAM$$$ ",np.array(actions[0:5]))
-        return np.array(actions[0:5]) > np.random.normal(.5,.1,size=5)
+        return np.array(actions[0:5]) + np.random.normal(0,.05,size=5)
 
     def vote_team(self, state):
         # inform player of proposed team
         # request for team vote
         actions = self.run_model(state)
         self.action_logit_list.append(actions * self.team_vote_mask)
-        return actions[5] > np.random.normal(.5,.1)
+        return actions[5] + np.random.normal(0,.05)
 
     def show_team(self, state):
         # inform player of selected team (or if no team picked)
@@ -121,7 +121,7 @@ class AvalonPlayer(Player):
         # request for quest vote
         actions = self.run_model(state)
         self.action_logit_list.append(actions * self.quest_vote_mask)
-        return actions[6] > np.random.normal(.5,.1)
+        return actions[6] + np.random.normal(0,.05)
 
     def see_quest(self, state):
         # show quest result
@@ -133,4 +133,4 @@ class AvalonPlayer(Player):
         # request guess for merlin
         actions = self.run_model(state)
         print("$$$MERLIN$$$ ",np.array(actions[7:12]))
-        return np.array(actions[7:12]) > np.random.normal(.5,.1,size=5)
+        return np.array(actions[7:12]) + np.random.normal(0,.05,size=5)

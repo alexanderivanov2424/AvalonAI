@@ -32,9 +32,10 @@ def train(players):
         true_merlin = tf.constant(game.roles == 2, dtype="float32")
         true_sides = tf.constant(game.sides == 1, dtype="float32")
 
-
-        if np.sum(result) == 3:
-            print(result)
+        #if np.sum(result) == 3:
+        if np.sum(game.quests==0) == 5:
+            return None
+        print(game.quests)
 
         for i, player in enumerate(players):
             player_losses[i].append(player.loss_function(true_sides, true_merlin, result[i]))
@@ -65,18 +66,19 @@ for player in players:
 
 L = []
 L_mean = []
-for i in range(1000):
+for i in range(10000):
     loss = train(players)
     # print("LOSS: ", loss, end='\r')
     # if i % 10 == 0:
     #    print()
-    L.append(loss)
-    L_mean.append(np.mean(L[-100:]))
-    plt.plot(L_mean)
-    plt.plot(L)
-    plt.draw()
-    plt.pause(0.001)
-    plt.cla()
+    if loss:
+        L.append(loss)
+        L_mean.append(np.mean(L[-100:]))
+        plt.plot(L_mean)
+        plt.plot(L)
+        plt.draw()
+        plt.pause(0.001)
+        plt.cla()
 
     if i % 50 == 0:
         print("SAVE")

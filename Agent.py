@@ -7,10 +7,8 @@ from tensorflow.nn import sigmoid_cross_entropy_with_logits
 
 
 class Model(tf.keras.Model):
-    def __init__(self, action_size):
+    def __init__(self):
         super(Model, self).__init__()
-
-        self.action_size = action_size
 
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
 
@@ -19,18 +17,42 @@ class Model(tf.keras.Model):
         )
 
         self.P = Sequential()
-        self.P.add(layers.Dense(50,activation="relu", dtype="float32",use_bias=False))
+        self.P.add(layers.Dense(100,activation="relu", dtype="float32"))
+        #self.P.add(layers.BatchNormalization())
+        self.P.add(layers.Dense(100,activation="relu", dtype="float32",use_bias=False))
         #self.P.add(layers.BatchNormalization())
         #self.P.add(layers.Dense(100,activation="sigmoid", dtype="float32",use_bias=False))
         #self.P.add(layers.BatchNormalization())
-        #self.P.add(layers.Dense(100,activation="sigmoid", dtype="float32",use_bias=False))
-        #self.P.add(layers.BatchNormalization())
-        self.P.add(layers.Dense(self.action_size, activation="sigmoid", dtype="float32"))
 
-    def call(self, inputs, hidden):
+
+        self.team_prop = layers.Dense(5, activation="softmax", dtype="float32", name="team_prop")
+
+        self.team_vote = layers.Dense(2, activation="softmax", dtype="float32", name="team_vote")
+
+        self.quest_vote = layers.Dense(2, activation="softmax", dtype="float32", name="quest_vote")
+
+        self.merlin_guess = layers.Dense(5, activation="softmax", dtype="float32", name="merlin_guess")
+
+        self.side_guess = layers.Dense(5, activation="softmax", dtype="float32", name="side_guess")
+
+    def call(self, inputs, hidden,action):
         inputs = tf.dtypes.cast(np.array([[inputs]]), dtype="float32")
         inputs, *next_state = self.GRU(inputs, initial_state=hidden)
-        inputs = self.P(inputs)
+        if not action == "none":
+            inputs = self.P(inputs)
+
+        if action == "tp":
+            inputs = self.team_prop(inputs)
+        elif action == "tv":
+            inputs = self.team_vote(inputs)
+        elif action == "qv":
+            inputs = self.quest_vote(inputs)
+        elif action == "mg":
+            inputs = self.merlin_guess(inputs)
+        elif action == "sg":
+            inputs = self.side_guess(inputs)
+
+        #print(inputs)
         return tf.squeeze(inputs), next_state
 
 
@@ -38,30 +60,23 @@ class Model(tf.keras.Model):
 #         loss_array = tf.ones(1) - tf.constant(win, dtype="float32")
 #         return tf.reduce_mean(loss_array)
 
-
 class AvalonPlayer(Player):
     def __init__(self):
-        self.model = Model(17)
+        self.model = Model()
         self.hidden = None
-        self.merlin_guess_list = []
-        self.side_guess_list = []
+        #self.merlin_guess_list = []
+        #self.side_guess_list = []
         self.action_logit_list = []
 
-        self.proposed_team_mask = tf.convert_to_tensor([1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0],dtype='float32')
-        self.team_vote_mask =     tf.convert_to_tensor([0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0],dtype='float32')
-        self.quest_vote_mask =    tf.convert_to_tensor([0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0],dtype='float32')
-        self.merlin_guess_mask =  tf.convert_to_tensor([0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0],dtype='float32')
-        self.side_guess_mask =    tf.convert_to_tensor([0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1],dtype='float32')
-
-    def run_model(self, state):
-        actions, self.hidden = self.model.call(state, self.hidden)
-        self.merlin_guess_list.append(actions * self.merlin_guess_mask)
-        self.side_guess_list.append(actions * self.side_guess_mask)
+    def run_model(self, state, action):
+        actions, self.hidden = self.model.call(state, self.hidden, action)
+        #self.merlin_guess_list.append(actions * self.merlin_guess_mask)
+        #self.side_guess_list.append(actions * self.side_guess_mask)
         return actions
 
     def reset(self):
-        self.merlin_guess_list = []
-        self.side_guess_list = []
+        #self.merlin_guess_list = []
+        #self.side_guess_list = []
         self.action_logit_list = []
         self.hidden = None
 
@@ -71,8 +86,7 @@ class AvalonPlayer(Player):
         loss = 0
         reward = 100 if did_win else -100
         for action_logit in reversed(self.action_logit_list):
-            diff = action_logit - 0.5
-            loss += -diff * diff * reward
+            loss += -tf.reduce_sum(tf.math.log(.001 + tf.cast(action_logit,tf.float32)) * reward)
             reward *= 0.99
         # for guess in self.merlin_guess_list:
         #     loss += sigmoid_cross_entropy_with_logits(true_merlin, guess)
@@ -84,53 +98,62 @@ class AvalonPlayer(Player):
         loss = 0
         reward = 10 if quest_result else 0
         for action_logit in reversed(self.action_logit_list):
-            diff = action_logit - 0.5
-            loss += -diff * diff * reward
+            loss += -tf.reduce_sum(tf.math.log(.001 + tf.cast(action_logit,tf.float32)) * reward)
             reward *= 0.99
         return loss
 
     def see_start(self, state):
         # show player start state
-        actions = self.run_model(state)
-        self.action_logit_list.append(1)
+        actions = self.run_model(state,"none")
 
-    def pick_team(self, state):
+    def pick_team(self, state, team_size):
         # show player state
         # request for team to be selected
-        actions = self.run_model(state)
-        self.action_logit_list.append(actions * self.proposed_team_mask)
+        actions = self.run_model(state,"tp")
+        on_team = np.random.choice(5,team_size,replace=False,p=np.array(actions))
+
+        self.action_logit_list.append(tf.gather(actions,on_team))
         #print("$$$TEAM$$$ ",np.array(actions[0:5]))
-        return np.array(actions[0:5]) + np.random.normal(0,.05,size=5)
+        team = np.zeros(5)
+        team[on_team] = 1
+        return team
 
     def vote_team(self, state):
         # inform player of proposed team
         # request for team vote
-        actions = self.run_model(state)
-        self.action_logit_list.append(actions * self.team_vote_mask)
-        return actions[5] + np.random.normal(0,.05)
+        actions = self.run_model(state,"tv")
+        vote = int(actions[0] < np.random.rand())
+        V = np.array(vote)
+        self.action_logit_list.append(tf.gather(actions,V))
+        return vote
 
     def show_team(self, state):
         # inform player of selected team (or if no team picked)
         # show player who votes
         # no return
-        actions = self.run_model(state)
-        self.action_logit_list.append(1)
+        actions = self.run_model(state,"none")
 
     def vote_quest(self, state):
         # show who is on team
         # request for quest vote
-        actions = self.run_model(state)
-        self.action_logit_list.append(actions * self.quest_vote_mask)
-        return actions[6] + np.random.normal(0,.05)
+        actions = self.run_model(state,"qv")
+        vote = int(actions[0] < np.random.rand())
+        V = np.array(vote)
+        self.action_logit_list.append(tf.gather(actions,V))
+        return vote
 
     def see_quest(self, state):
         # show quest result
         # no return
-        actions = self.run_model(state)
+        actions = self.run_model(state,"none")
         self.action_logit_list.append(1)
 
     def guess_merlin(self, state):
         # request guess for merlin
-        actions = self.run_model(state)
-        print("$$$MERLIN$$$ ",np.array(actions[7:12]))
-        return np.array(actions[7:12]) + np.random.normal(0,.05,size=5)
+        actions = self.run_model(state,"mg")
+        print("$$$MERLIN$$$ ",np.array(actions))
+        M = np.random.choice(5,p=np.array(actions))
+        self.action_logit_list.append(tf.gather(actions,M))
+        pick = np.zeros(5)
+        pick[M] = 1
+        return pick

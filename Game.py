@@ -385,7 +385,7 @@ class Avalon:
         leader = self.players[self.leader]
         state = self.get_state(self.leader)
         state = self.mask_state(state, "team_prop")
-        self.team = rotate(leader.pick_team(state),-self.leader)
+        self.team = rotate(leader.pick_team(state,self.team_size),-self.leader)
         on_team = self.team.argsort()[-self.team_size :]
         self.team = np.zeros(self.N)
         self.team[on_team] = 1
@@ -423,7 +423,7 @@ class Avalon:
                 continue
             state = self.get_state(i)
             state = self.mask_state(state, "quest_vote")
-            if np.array(player.vote_quest(state)) == 1 or self.sides[i] == 1:
+            if np.array(player.vote_quest(state) > .5) == 1 or self.sides[i] == 1:
                 self.quest_succeed_votes += 1
             else:
                 self.quest_fail_votes += 1

@@ -22,7 +22,7 @@ def train(players):
 
         if game.winning_side() == 1:
             game.guess_merlin()
-            
+
         print(game.quests)
         result = game.get_game_result()
         true_merlin = tf.constant(game.roles == 2, dtype="float32")

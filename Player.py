@@ -91,7 +91,7 @@ class HumanPlayer(Player):
         print("Roles You See: ", [self.role_to_name(r) for r in state[12:17]])
         print()
 
-    def pick_team(self, state):
+    def pick_team(self, state, team_size):
         team_size = int(state[42])
         print("You are the leader")
         team_list = self.get_team(team_size)

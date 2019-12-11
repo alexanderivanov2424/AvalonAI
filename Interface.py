@@ -6,47 +6,17 @@ from Player import *
 from AvalonTypes import *
 
 
-path = "./save_{}/AvalonAI"
-version = 2
+path = "./{}/AvalonAI"
+version = "final_training(full,sep_net)"
 path = path.format(version)
 
 AI = AvalonPlayer()
 
 AI.model.load_weights(path)
 
-N = self.N = 5
-self.game_state = (
-    GameStateBuilder()
-    # static knowledge
-    .add_field("own_side", len(Side))
-    .add_field("own_role", len(Role))
-    .add_array("visible_sides", N, len(VisibleSide))
-    .add_array("visible_roles", N, len(VisibleRole))
-    # game meta info
-    .add_field("phase", len(Phase))
-    .add_field("leader", N)
-    .add_field("quest", N)
-    .add_number("quest_num")
-    .add_array("quest_results", N, len(QuestResult))
-    .add_number("consec_rejects")
-    # team building phase info
-    .add_number("need_team_prop")
-    .add_number("need_team_vote")
-    .add_field("team_prop", N)
-    .add_field("team_votes", N)
-    .add_number("team_size")
-    # quest phase info
-    .add_number("need_quest_vote")
-    .add_field("quest_team", N)
-    .add_number("quest_success_votes")
-    .add_number("quest_fail_votes")
-    # unused
-    # .add_field("is_leader", 1)
-    # .add_field("who_is_leader", N) -> "leader"
-    # .add_field("current_quests", N) -> "quest_results"
-    # .add_field("team_selected", N) -> "quest_team"
-    .build()
-)
+N = 5
+
+
 
 state = np.zeros(45)
 leader = 0

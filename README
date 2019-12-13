@@ -1,30 +1,94 @@
+##########################################################
+    _             _                  _    ___
+   / \__   ____ _| | ___  _ __      / \  |_ _|
+  / _ \ \ / / _` | |/ _ \| '_ \    / _ \  | |
+ / ___ \ V / (_| | | (_) | | | |  / ___ \ | |
+/_/   \_\_/ \__,_|_|\___/|_| |_| /_/   \_\___|
 
-# http://upload.snakesandlattes.com/rules/r/ResistanceAvalon.pdf
+##########################################################
 
-5 player version
-M G G E E
+CODE OUTLINE:
 
+Agent - Holds AvalonPlayer code and associated Model. AvalonPlayer serves as a
+        wrapper class for the actual Recurrent Policy Network keeping track of
+        the hidden state and the actions taken by the agent for calculating the
+        loss.
+
+AvalonTester - Testing script for trained agent. Loads weights from specified
+               directory and plays one human player against 4 AI players.
+
+AvalonTypes - File for holding utility classes. (Was planned to be used for
+              refactoring game architecture.)
+
+Game - Holds all game logic and methods to run through individual game phases.
+       Servers to abstract away handling individual agents.
+
+Interface - Interface to be used for Human Testing. Allows user to record
+            actions take by other players and feed them into the AI. The AI also
+            returns its own actions.
+
+Player - Class to hold player interface, HumanPlayer, and RandomPlayer.
+
+RandomTester - Script to collect various statistics about game-play between
+               AI players and random agents.
+
+Trainer - Main Script for Training the AI. Runs simulated games between 5 AI
+          players and saves learned weights to specified directory. Can also
+          load weights from provided directory to continue training an exiting
+          model.
+
+Additional Comments in files.
+__________________________________________________________
+
+REQUIREMENTS:
+
+Python 3.6.8
+
+tensorflow==2.0.0b1
+numpy==1.16.4
+
+
+__________________________________________________________
+
+RULES:
+
+Ai is designed to play the 5 player version of Avalon.
+The roles include Merlin, Good, Good, Evil, and Evil.
+
+As there is no Assassin the Merlin guess is determined jointly by both
+evil players.
+
+Full game rules can be found at:
+http://upload.snakesandlattes.com/rules/r/ResistanceAvalon.pdf
+
+__________________________________________________________
+
+REPRESENTATION:
+
+
+Numeric values for each game variable:
+? - is unknown or undefined
 
 Roles:  -1  0  1  2
-         E  ?  G  M
+         E  ?  G  M   (evil, good, merlin)
 
 Sides:  -1  0  1
-         E  ?  G
+         E  ?  G      (evil, good)
 
 Quest:  -1  0  1
-         F  ?  P
+         F  ?  P      (pass, fail)
 
 Votes:  0  1
-        N  Y
+        N  Y          (no, yes)
 
 
-State:
+State Representation:
 contents            size            values
 ###########################################
 own side            (1)             -1   1
 own role            (1)             -1   1 2
 
-is leader           (1)                0 1 TODO: redundant with need team prop?
+is leader           (1)                0 1
 
 need team prop      (1)                0 1
 need team vote      (1)                0 1
@@ -38,13 +102,16 @@ who is leader       (5)                0 1
 current quests      (5)             -1 0 1
 
 team proposition    (5)                0 1
-team selected       (5)                0 1 TODO: add bit for whether team passed or failed
+team selected       (5)                0 1
 team votes          (5)                0 1
 
 team size           (1)                2-4
 quest succeed votes (1)                2-4
 quest fail votes    (1)                2-4
 
+evil probabilities  (5)                0-1
+------------------------------------------
+Total:              (50)
 
 
 Action:
@@ -56,4 +123,5 @@ vote team yes       (1)                0-1
 vote quest no       (1)                0-1
 vote quest yes      (1)                0-1
 guess Merlin        (5)                0-1
-guess side          (5)                0-1
+
+__________________________________________________________

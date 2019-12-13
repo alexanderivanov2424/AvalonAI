@@ -151,7 +151,7 @@ class AvalonPlayer(Player):
     def guess_merlin(self, state):
         # request guess for merlin
         actions = self.run_model(state,"mg")
-        print("$$$MERLIN$$$ ",np.array(actions))
+        #print("$$$MERLIN$$$ ",np.array(actions))
         M = np.random.choice(5,p=np.array(actions))
         self.action_logit_list.append(tf.gather(actions,M))
         pick = np.zeros(5)

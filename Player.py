@@ -133,3 +133,31 @@ class HumanPlayer(Player):
         print()
         team_list = team.split(" ")
         return np.array(team_list)
+
+class RandomPlayer(Player):
+    def __init__(self):
+        pass
+
+    def reset(self):
+        pass
+
+    def see_start(self, state):
+        pass
+
+    def pick_team(self, state, team_size):
+        return np.random.uniform(size=5)
+
+    def vote_team(self, state):
+        return np.random.randint(0,1)
+
+    def show_team(self, state):
+        pass
+
+    def vote_quest(self, state):
+        return np.random.randint(0,1)
+
+    def see_quest(self, state):
+        pass
+
+    def guess_merlin(self, state):
+        return np.random.uniform(size=5)

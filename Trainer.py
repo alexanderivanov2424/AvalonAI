@@ -10,6 +10,7 @@ import tensorflow as tf
 import numpy as np
 
 import matplotlib.pyplot as plt
+GENERATE_PLOTS = False
 
 leader_on_quest_list = []
 double_fail_list = []
@@ -74,8 +75,8 @@ def train(players):
 
 
 path = "./{}/AvalonAI"
-version = "final"
-new_version = "final"
+version = "save_weights"
+new_version = "save_weights"
 
 players = [AvalonPlayer() for i in range(5)]
 
@@ -89,18 +90,16 @@ for player in players:
 
 for i in range(10000):
     loss = train(players)
-    # print("LOSS: ", loss, end='\r')
-    # if i % 10 == 0:
-    #    print()
 
-    plt.plot(leader_on_quest_list[-50:],label="leader on own quest per game")
-    plt.plot(double_fail_list[-50:],label="double fails per game")
-    plt.plot(team_rejects_list[-50:],label="team rejects per game")
+    if GENERATE_PLOTS:
+        plt.plot(leader_on_quest_list[-50:],label="leader on own quest per game")
+        plt.plot(double_fail_list[-50:],label="double fails per game")
+        plt.plot(team_rejects_list[-50:],label="team rejects per game")
 
-    plt.draw()
-    plt.legend()
-    plt.pause(0.001)
-    plt.cla()
+        plt.draw()
+        plt.legend()
+        plt.pause(0.001)
+        plt.cla()
 
     if i % 50 == 0:
         print("SAVE")

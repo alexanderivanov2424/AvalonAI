@@ -8,7 +8,7 @@ path = "./{}/AvalonAI"
 version = "final"
 path = path.format(version)
 
-players = [AvalonPlayer() for i in range(4)]
+players = [AvalonPlayer() for i in range(5)]
 
 for player in players:
     try:
@@ -17,7 +17,7 @@ for player in players:
         pass
 
 
-players.append(RandomPlayer())
+#players.append(RandomPlayer())
 
 
 wins = 0

@@ -5,10 +5,10 @@ import numpy as np
 from Player import *
 
 path = "./{}/AvalonAI"
-version = "final_training(full,sp_net)"
+version = "final"
 path = path.format(version)
 
-players = [AvalonPlayer() for i in range(5)]
+players = [AvalonPlayer() for i in range(4)]
 
 for player in players:
     try:
@@ -17,7 +17,7 @@ for player in players:
         pass
 
 
-#players.append(RandomPlayer())
+players.append(RandomPlayer())
 
 
 wins = 0
@@ -63,19 +63,37 @@ type                win %       %GOOD WIN
 4 RANDOM vs RANDOM  .4          0
 4 RANDOM vs AI      .395        0
 #################################
+$$$ 1000
 4 AI vs RANDOM
 WINS: 471
 GOOD TEAM WINS: 142
 WIN WHEN GOOD: 112
 WIN WHEN BAD: 359
 GUESSED MERLIN 28
+
+$$$ 10000
+WINS: 568
+GOOD TEAM WINS: 256
+WIN WHEN GOOD: 215
+WIN WHEN BAD: 353
+GUESSED MERLIN 55
+
 #################################
+$$$ 1000
 4 AI vs AI
 WINS: 512
 GOOD TEAM WINS: 388
 WIN WHEN GOOD: 258
 WIN WHEN BAD: 254
 GUESSED MERLIN 97
+
+$$$ 10000
+WINS: 507
+GOOD TEAM WINS: 498
+WIN WHEN GOOD: 302
+WIN WHEN BAD: 205
+GUESSED MERLIN 128
+
 #################################
 4 RANDOM vs RANDOM
 WINS: 386

@@ -64,39 +64,19 @@ class AvalonPlayer(Player):
     def __init__(self):
         self.model = Model()
         self.hidden = None
-        #self.merlin_guess_list = []
-        #self.side_guess_list = []
         self.action_logit_list = []
 
     def run_model(self, state, action):
         actions, self.hidden = self.model.call(state, self.hidden, action)
-        #self.merlin_guess_list.append(actions * self.merlin_guess_mask)
-        #self.side_guess_list.append(actions * self.side_guess_mask)
         return actions
 
     def reset(self):
-        #self.merlin_guess_list = []
-        #self.side_guess_list = []
         self.action_logit_list = []
         self.hidden = None
 
-    def loss_function(self, true_sides, true_merlin, did_win):
-        true_merlin = tf.concat([tf.zeros(7),true_merlin,tf.zeros(5)], 0)
-        true_sides = tf.concat([tf.zeros(12),true_sides], 0)
+    def loss_function(self, did_win):
         loss = 0
         reward = 100 if did_win else -100
-        for action_logit in reversed(self.action_logit_list):
-            loss += -tf.reduce_sum(tf.math.log(.001 + tf.cast(action_logit,tf.float32)) * reward)
-            reward *= 0.99
-        # for guess in self.merlin_guess_list:
-        #     loss += sigmoid_cross_entropy_with_logits(true_merlin, guess)
-        # for guess in self.side_guess_list:
-        #     loss += sigmoid_cross_entropy_with_logits(true_sides, guess)
-        return loss
-
-    def loss_quest(self, quest_result):
-        loss = 0
-        reward = 10 if quest_result else 0
         for action_logit in reversed(self.action_logit_list):
             loss += -tf.reduce_sum(tf.math.log(.001 + tf.cast(action_logit,tf.float32)) * reward)
             reward *= 0.99
@@ -113,7 +93,6 @@ class AvalonPlayer(Player):
         on_team = np.random.choice(5,team_size,replace=False,p=np.array(actions))
 
         self.action_logit_list.append(tf.gather(actions,on_team))
-        #print("$$$TEAM$$$ ",np.array(actions[0:5]))
         team = np.zeros(5)
         team[on_team] = 1
         return team

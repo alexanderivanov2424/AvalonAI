@@ -18,10 +18,15 @@ N = 5
 
 
 
-state = np.zeros(45)
+state = np.zeros(50)
 leader = 0
 quests = np.zeros(5)
 current_quest = 0
+
+fail_votes_list = []
+team_matrix = []
+evil_probs = np.zeros(5)
+evil_probs = .4
 
 team_sizes = [2, 3, 2, 3, 3]
 
@@ -57,8 +62,9 @@ sides = np.array([rtos(r) for r in roles])
 state[7:12] = sides
 state[12:17] = roles
 state[12 + leader] = 1
+state[45:50] = evil_probs
 
-state[2] = 1 if leader == 4 else 0
+state[2] = 1 if leader == 0 else 0
 
 print("SHOWING START")
 AI.see_start(state)
@@ -72,12 +78,13 @@ while True:
     state[2] = 1 if leader == 4 else 0
     state[22:27] = quests
     state[42] = team_sizes[current_quest]
+    state[45:50] = evil_probs
 
-    if leader == 4:
+    if leader == 0:
         print("PROPOSE TEAM")
         state[12 + leader] = 1
         state[3] = 1
-        print("TEAM PICK: ", AI.pick_team(state))
+        print("TEAM PICK: ", AI.pick_team(state,team_sizes[current_quest]))
         state[12 + leader] = 0
         state[3] = 0
         input("CONTINUE")
@@ -85,6 +92,7 @@ while True:
     state[4] = 1
     state[12 + leader] = 1
     prop = [float(i) for i in input("Team Prop? (0 1): ").split(" ")]
+
     state[27:32] = np.array(prop)
     print("TEAM VOTE: ", AI.vote_team(state))
     state[4] = 0
@@ -113,7 +121,7 @@ while True:
 
     input("CONTINUE")
 
-    if prop[4] == 1:
+    if prop[0] == 1:
         state[5] = 1
         state[32:37] = prop
         print("QUEST VOTE: ", AI.vote_quest(state))
@@ -124,6 +132,10 @@ while True:
     quests[current_quest] = int(input("QUEST RESULT (-1 1): "))
     fail_votes = int(input("NUM FAIL VOTES: "))
     success_votes = team_sizes[current_quest] - fail_votes
+    team_matrix.append(prop)
+    fail_votes_list.append(fail_votes)
+
+    evil_probs = QuestAnalyzer.compute(np.array(team_matrix), np.array(fail_votes_list))
 
     state[32:37] = prop
     state[6] = quests[current_quest]

@@ -7,7 +7,7 @@ from AvalonTypes import *
 
 
 path = "./{}/AvalonAI"
-version = "final_training(full,sep_net)"
+version = "final"
 path = path.format(version)
 
 AI = AvalonPlayer()
@@ -15,8 +15,6 @@ AI = AvalonPlayer()
 AI.model.load_weights(path)
 
 N = 5
-
-
 
 state = np.zeros(50)
 leader = 0

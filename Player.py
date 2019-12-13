@@ -11,7 +11,7 @@ class Player:
         # no return
         pass
 
-    def pick_team(self, state):
+    def pick_team(self, state, team_size):
         # show player state
         # request for team to be selected
         pass

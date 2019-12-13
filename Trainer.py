@@ -10,6 +10,12 @@ import tensorflow as tf
 import numpy as np
 
 
+"""
+Main Training Class
+
+Used to train AI through self play in Avalon Game Environment.
+"""
+
 def train(players):
     # loss stored in a list for each player
     # this allows for example, getting the loss after every quest

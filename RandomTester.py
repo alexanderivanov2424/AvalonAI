@@ -4,6 +4,11 @@ import tensorflow as tf
 import numpy as np
 from Player import *
 
+"""
+Testing Class
+Used to test AI against random players.
+"""
+
 path = "./{}/AvalonAI"
 version = "final"
 path = path.format(version)

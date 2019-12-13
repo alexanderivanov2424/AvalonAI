@@ -6,6 +6,11 @@ from Player import *
 from AvalonTypes import *
 
 
+"""
+Interface used to play AI against human players.
+
+"""
+
 path = "./{}/AvalonAI"
 version = "final"
 path = path.format(version)

@@ -4,6 +4,11 @@ import tensorflow as tf
 import numpy as np
 from Player import *
 
+"""
+Play a Human against 4 trained AI's
+
+"""
+
 path = "./{}/AvalonAI"
 version = "final_training(full,sp_net)"
 path = path.format(version)
@@ -32,5 +37,9 @@ if game.winning_side() == 1:
     game.guess_merlin()
 
 result = game.get_game_result()
-print([players[-1].role_to_name(r) for r in game.roles])
-print(result)
+
+def rotate(L,i):
+    return np.append(L[i:],L[:i])
+
+print(rotate([players[-1].role_to_name(r) for r in game.roles],1))
+print(rotate(result,1))

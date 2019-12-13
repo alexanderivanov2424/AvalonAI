@@ -3,12 +3,20 @@ import tensorflow as tf
 from Player import *
 from AvalonTypes import *
 
-
+# helper function
 def rotate(L,i):
     return np.append(L[i:],L[:i])
 
+
+"""
+Avalon Game Class
+
+Contains all Avalon game logic and constructs state vector that is passed to AI
+agents.
+"""
 class Avalon:
 
+    # initialize game variables
     def __init__(self, players):
         assert len(players) == 5
 
@@ -45,10 +53,12 @@ class Avalon:
         self.proposed_team_counter = 0
         pass
 
+    # increment the leader
     def increment_leader(self):
         self.leader += 1
         self.leader %= self.N
 
+    # get the roles that are visible for a specific player
     def get_visible_roles(self, role, i):
         assert role in [-1, 1, 2]
         if role == -1:
@@ -60,6 +70,7 @@ class Avalon:
         if role == 2:
             return self.roles
 
+    # get the visible sized for a specific player (good / evil)
     def get_visible_sides(self, role, i):
         assert role in [-1, 1, 2]
         if role == -1:
@@ -71,13 +82,15 @@ class Avalon:
         if role == 2:
             return self.sides
 
+    # get the leader as a one_hot array
     def get_visible_leader(self):
         leaders = np.zeros(self.N)
         leaders[self.leader] = 1
         return leaders
 
+    # get the state vector for a specific player
+    # some part of this will later be masked out
     def get_state(self, i):
-
         state = np.zeros(self.state_size)
 
         state[0] = self.sides[i]
@@ -108,6 +121,9 @@ class Avalon:
 
         return state
 
+    # get the state mask for a specific player
+    # used to mask different parts of the state vector durring different game
+    # phases
     def mask_state(self, state, mode="all"):
         mask = np.zeros(self.state_size)
         mask[0] = 1  # always show own side
@@ -149,6 +165,7 @@ class Avalon:
             pass
         return state * mask
 
+    # start the game
     def start_game(self):
         # give first input to each agent
         for i, player in enumerate(self.players):
@@ -156,6 +173,7 @@ class Avalon:
             state = self.mask_state(state, "start")
             player.see_start(state)
 
+    # get the team proposition from the leader
     def get_team(self):
         # have leader select team
         self.team_size = self.team_sizes[self.current_quest]
@@ -167,6 +185,7 @@ class Avalon:
         self.team = np.zeros(self.N)
         self.team[on_team] = 1
 
+    # get every players vote on the proposed team
     def vote_team(self):
         # everyone sees proposed team and votes
         for i, player in enumerate(self.players):
@@ -176,6 +195,7 @@ class Avalon:
 
         self.team_r = self.team_vote.sum() >= self.N / 2
 
+    # thow the team that either passed or failed to all players
     def show_team(self):
         # everyone sees selected team and who picked it
         team_mask = "team_pass_info" if self.team_r else "team_fail_info"
@@ -190,6 +210,7 @@ class Avalon:
             self.increment_leader()
             self.proposed_team_counter += 1
 
+    # collect quest votes from people going on the quest
     def vote_quest(self):
         # members of quest vote
         quest_votes = []
@@ -214,6 +235,7 @@ class Avalon:
         self.team_matrix.append(self.team)
         self.evil_probs = QuestAnalyzer.compute(np.array(self.team_matrix), np.array(self.fail_votes))
 
+    # show all players the result of the quest
     def show_quest(self):
         # everyone sees quest result
         for i, player in enumerate(self.players):
@@ -225,6 +247,7 @@ class Avalon:
         self.increment_leader()
         self.current_quest += 1
 
+    # have the evil players guess merlin together
     def guess_merlin(self):
         guesses = np.zeros(self.N)
         for i, player in enumerate(self.players):
@@ -238,6 +261,7 @@ class Avalon:
         if self.merlin_discovered:
             self.game_result = -1
 
+    # check for if the game is over
     def is_over(self):
         # too many proposed teams failed so evil wins
         if self.proposed_team_counter >= 5:
@@ -251,15 +275,19 @@ class Avalon:
             self.game_result = 1
         return self.game_result
 
+    # get the side that won the game
     def winning_side(self):
         return self.game_result
 
+    # get the win / loose boolean for each player
     def get_game_result(self):
         return self.sides == self.game_result
 
 """
 Tester Class with 5 human players
 Runs by default when running Game.py
+
+This is the example structure for running a game simulation.
 """
 class AvalonRunner:
     def __init__(self):

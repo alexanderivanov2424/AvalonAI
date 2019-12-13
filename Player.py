@@ -41,7 +41,10 @@ class Player:
         # request guess for merlin
         pass
 
-
+"""
+Human Player
+ - Interfact used by human to interact with game
+"""
 class HumanPlayer(Player):
     def __init__(self):
         self.role_names = ""
@@ -134,6 +137,10 @@ class HumanPlayer(Player):
         team_list = team.split(" ")
         return np.array(team_list)
 
+"""
+Random Player
+ - Used for testing
+"""
 class RandomPlayer(Player):
     def __init__(self):
         pass
